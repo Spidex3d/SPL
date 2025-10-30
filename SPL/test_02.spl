@@ -1,0 +1,97 @@
+File types equivalent .spl = cpp
+File types equivalent .splh = .h
+
+code a lexer
+Defining your grammer ## Syntex ##
+code a parser
+code generator
+assembly -> machine code
+Code a Minimal Assembler from Scratch 
+
+
+
+### The New Visual Basic ####
+
+## Syntex
+start and end syntext
+
+// This is a comment
+
+
+< less_than
+> more_than
+if 
+comp (foo with bar
+! if knot somthing
+List & arrays
+vector will be vector as i cant see an alternativee 
+global 
+
+includes -: to
+#adding "string.spxh"
+#adding "maths.spxh"
+
+put 4 in to test & its an int
+int test in 4;
+out test
+
+dec name as string	// delare a string	
+name = "Martyn";
+pout name;
+
+Why not use templates for every thing
+func: this is a function
+make functions extern so usable in all forms
+start func: add x + y
+x + y
+end func:
+
+add x: foo, y: bar
+
+
+mod main()            // Start the main modual
+
+dec_s name   	     // delare a string	
+dec_i test1   	     // delare an interger 
+dec_f test2    	     // delare an float
+dec_d salary    	 // delare an decimal
+dec_bool window is_true or is_false  // delare a boolean
+
+test1 = 4		        //put value 4 in to test1
+test2 = 1.0f	        //put value 1.0 in to test2
+
+
+
+name = "martyn"
+working()           // main loop
+
+    branch(index)       // start a branch
+      twig 1:       // start a twig)
+      pout name;    // print out name Martyn
+
+      twig 2:       // start a twig)
+      twig 3:       // start a twig)
+
+Endworking;	// End main Loop
+
+Endmod;		// End the main modual 
+
+from test.spl
+
+number1 = 141;
+number2 = 27;
+test = 12;
+12;
+return (number1)
+// this is a comment
+if (x == 5) {
+    return y;
+}
+foo123 = 10;
+
+Reading from the .spl file!
+Lexer error: unexpected character '_' at position 4
+Lexer error: unexpected character '+' at position 13
+Lexer error: unexpected character '_' at position 22
+Parsing completed.Expected '='
+This is the end of the program

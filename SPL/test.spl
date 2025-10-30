@@ -1,0 +1,9 @@
+
+dec_i x = 10 * 10 / 2;
+pout x;
+dec_i index = 5 * 10 / 2;
+pout index;
+// testing comments
+dec_i number1; 
+number1 = 141; 
+pout number1;
