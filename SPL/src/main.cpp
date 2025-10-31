@@ -6,6 +6,7 @@
 
 #include "../headers/lexer.h"
 #include "../headers/parsing.h"
+#include "../headers/interpreter.h"
 #include "../headers/splHelper.h"
 
 
