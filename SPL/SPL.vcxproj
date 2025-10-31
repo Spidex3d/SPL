@@ -132,9 +132,11 @@
     <ClCompile Include="src\interpreter.cpp" />
     <ClCompile Include="src\lexer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\parsing.cpp" />
     <ClCompile Include="src\splHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\ast.h" />
     <ClInclude Include="headers\interpreter.h" />
     <ClInclude Include="headers\lexer.h" />
     <ClInclude Include="headers\parsing.h" />
