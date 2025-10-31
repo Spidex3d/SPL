@@ -7,3 +7,10 @@ pout index;
 dec_i number1; 
 number1 = 141; 
 pout number1;
+
+dec_s name;
+name = "Martyn";
+pout name;
+
+dec_s greeting = "Hello, World";
+pout greeting;

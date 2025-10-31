@@ -61,6 +61,24 @@ std::vector<Token*> Lexer::tokenize()
 
 				tokens.push_back(tokenID);
 			}
+			// strings
+			else if (current == '"') {
+				std::string strValue;
+				advance(); // skip opening quote
+				while (current != '"' && current != '\0') {
+					strValue += current;
+					advance();
+				}
+				if (current == '"') {
+					advance(); // skip closing quote
+					tokenID = new Token{ TOKEN_STRING, strValue };
+					tokens.push_back(tokenID);
+				}
+				else {
+					std::cerr << "Lexer error: unterminated string literal at position " << cursor << std::endl;
+				}
+			}
+
 			// Handle integer literals Numbers
 			else if (isdigit(current)) {
 				std::string number;
