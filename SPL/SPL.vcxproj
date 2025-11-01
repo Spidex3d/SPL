@@ -138,6 +138,7 @@
     <ClCompile Include="src\interpreter.cpp" />
     <ClCompile Include="src\lexer.cpp" />
     <ClCompile Include="src\parsing.cpp" />
+    <ClCompile Include="src\SPLCore.cpp" />
     <ClCompile Include="src\splHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +147,7 @@
     <ClInclude Include="include\interpreter.h" />
     <ClInclude Include="include\lexer.h" />
     <ClInclude Include="include\parsing.h" />
+    <ClInclude Include="include\SPLCore.h" />
     <ClInclude Include="include\splHelper.h" />
     <ClInclude Include="include\tokens.h" />
   </ItemGroup>
