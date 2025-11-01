@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\lexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -32,22 +29,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers\lexer.h">
+    <ClInclude Include="include\ast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\parsing.h">
+    <ClInclude Include="..\..\Backup\SPL\SPL\headers\ast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\tokens.h">
+    <ClInclude Include="include\interpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\splHelper.h">
+    <ClInclude Include="include\lexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\interpreter.h">
+    <ClInclude Include="include\parsing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\ast.h">
+    <ClInclude Include="include\splHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tokens.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

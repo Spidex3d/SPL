@@ -1,8 +1,8 @@
-#include "../headers/lexer.h"
 #include <vector>
 #include <unordered_map>
-#include "../headers/tokens.h"
 #include <iostream>
+#include "../include/lexer.h"
+#include "../include/tokens.h"
 
 Lexer::Lexer(const std::string& sourceCode)
 	: source(sourceCode), cursor(0), size(sourceCode.length()),

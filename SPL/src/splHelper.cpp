@@ -1,4 +1,4 @@
-#include "../headers/splHelper.h"
+#include "../include/splHelper.h"
 #include <iostream>`
 
 

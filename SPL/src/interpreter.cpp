@@ -1,7 +1,7 @@
 ﻿#include <stdexcept>
 #include <string>
 #include <vector>
-#include "../headers/interpreter.h"
+#include "../include/interpreter.h"
 //#include "../headers/parsing.h"
 //#include "../headers/lexer.h"
 #include <iostream>

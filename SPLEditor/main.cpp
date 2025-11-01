@@ -4,10 +4,10 @@
 #include <vector>
 
 
-#include "../headers/lexer.h"
-#include "../headers/parsing.h"
-#include "../headers/interpreter.h"
-#include "../headers/splHelper.h"
+#include "lexer.h"
+#include "parsing.h"
+#include "interpreter.h"
+#include "splHelper.h"
 
 
 int main() {
