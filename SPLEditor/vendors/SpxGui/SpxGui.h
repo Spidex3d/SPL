@@ -514,132 +514,87 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
         }  
 
 		// --------------- Close, Maximize, Minimize buttons -----
-        float cr = 0.22f, cg = 0.22f, cb = 0.24f;
         float closeX = gScreenW - closebtnSize - 4.0f; // align right
-       // float maxX = gScreenW - closebtnSize * 2 - 4.0f;
         float maxX = gScreenW - closebtnSize * 2 - 12.0f;
-		//float minX = gScreenW - closebtnSize * 3 - 4.0f;
 		float minX = gScreenW - closebtnSize * 3 - 20.0f;
 
+        float cr = 0.22f, cg = 0.22f, cb = 0.24f;
         bool closeHover = (gMouseX >= closeX && gMouseX <= closeX + closebtnSize &&
             gMouseY >= iconY && gMouseY <= iconY + closebtnSize);
         // ------------------------ EXIT BUTTON --------------------
-        if (iconCloseTexID == 0) {
-            Image iconImg; // LoadTextuer
-            iconCloseTexID = LoadTextuer("../SPLEditor/Icon/Exit.jpg", iconImg);
+        {
+            if (iconCloseTexID == 0) {
+                Image iconImg; // LoadTextuer
+                iconCloseTexID = LoadTextuer("../SPLEditor/Icon/Exit.jpg", iconImg);
 
-        }
-            
-        if (closeHover) { cr = 0.22f; cg = 0.22f; cb = 0.9f; } // brighter on hover
-               DrawRect(closeX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
+            }
+
+            if (closeHover) { cr = 0.22f; cg = 0.22f; cb = 0.9f; } // Draw 3d effec on hover
+            DrawRect(closeX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
             // Draw image if loaded
             if (iconCloseTexID != 0) {
                 DrawImage(iconCloseTexID, gScreenW - closebtnSize - 4.0f, iconY, closebtnSize, closebtnSize);
-                               
+
                 if (closeHover && pressed) {
-                       GLwinWindowShouldClose(gMainWindow, 1);
+                    GLwinWindowShouldClose(gMainWindow, 1);
                 }
             }
+        }
         // ------------------------ EXIT BUTTON -----------------------
 
 		// ------------------------ MAXIMIZE BUTTON --------------------
-         bool maxHover = (gMouseX >= maxX && gMouseX <= maxX + closebtnSize &&
+        {
+            float cr = 0.22f, cg = 0.22f, cb = 0.24f;
+            bool maxHover = (gMouseX >= maxX && gMouseX <= maxX + closebtnSize &&
                 gMouseY >= iconY && gMouseY <= iconY + closebtnSize);
-        if (iconMaxTexID == 0) {
-            Image iconImg; // LoadTextuer
-            iconMaxTexID = LoadTextuer("../SPLEditor/Icon/Max.jpg", iconImg);
-        }
-        
-        if (maxHover) { cr = 0.22f; cg = 0.22f; cb = 0.9f; } // brighter on hover
-        DrawRect(maxX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
-        // Draw image if loaded
-        if (iconMaxTexID != 0) {
-            DrawImage(iconMaxTexID, gScreenW - closebtnSize * 2 - 12.0f, iconY, 30, 30);
-            if (maxHover && gMousePressed) {
-                          // Toggle maximize / restore
-                          static bool maximized = false;
-                          if (maximized) {
-                              GLwinRestoreWindow(gMainWindow); // you’ll need to implement this
-                          }
-                          else {
-                              GLwinMaximizeWindow(gMainWindow); // you’ll need to implement this
-                          }
-                          maximized = !maximized;
+            if (iconMaxTexID == 0) {
+                Image iconImg; // LoadTextuer
+                iconMaxTexID = LoadTextuer("../SPLEditor/Icon/Max.jpg", iconImg);
+            }
+
+            if (maxHover) { cr = 0.22f; cg = 0.22f; cb = 0.9f; } // Draw 3d effec on hover
+            DrawRect(maxX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
+            // Draw image if loaded
+            if (iconMaxTexID != 0) {
+                DrawImage(iconMaxTexID, gScreenW - closebtnSize * 2 - 12.0f, iconY, 30, 30);
+                if (maxHover && gMousePressed) {
+                    // Toggle maximize / restore
+                    static bool maximized = false;
+                    if (maximized) {
+                        GLwinRestoreWindow(gMainWindow); // you’ll need to implement this
+                    }
+                    else {
+                        GLwinMaximizeWindow(gMainWindow); // you’ll need to implement this
+                    }
+                    maximized = !maximized;
+                }
             }
         }
 		// ------------------------ END MAXIMIZE BUTTON --------------------
 
 		// ------------------------ MINIMIZE BUTTON ------------------------
-        bool minHover = (gMouseX >= maxX && gMouseX <= maxX + closebtnSize &&
-            gMouseY >= iconY && gMouseY <= iconY + closebtnSize);
-        if (iconMinTexID == 0) {
-            Image iconImg; // LoadTextuer
-            iconMinTexID = LoadTextuer("../SPLEditor/Icon/Minus.jpg", iconImg);
-            
-        }
-        if (minHover) { cr = 0.22f; cg = 0.22f; cb = 0.9f; } // brighter on hover
-       // DrawRect(minX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
-        DrawRect(minX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
-        // Draw image if loaded
-        if (iconMaxTexID != 0) {
-            DrawImage(iconMinTexID, gScreenW - closebtnSize * 3 - 20.0f, iconY, 30, 30);
+        {
+            float cr = 0.22f, cg = 0.22f, cb = 0.24f;
+            bool minHover = (gMouseX >= minX && gMouseX <= minX + closebtnSize &&
+                gMouseY >= iconY && gMouseY <= iconY + closebtnSize);
+            if (iconMinTexID == 0) {
+                Image iconImg; // LoadTextuer
+                iconMinTexID = LoadTextuer("../SPLEditor/Icon/Minus.jpg", iconImg);
 
-            if (minHover && gMousePressed) {
-                GLwinMinimizeWindow(gMainWindow); // you’ll need to implement this
+            }
+            if (minHover) { cr = 0.22f; cg = 0.22f; cb = 0.9f; } // Draw 3d effec on hover
+            DrawRect(minX, iconY, closebtnSize + 2, closebtnSize + 2, cr, cg, cb);
+            // Draw image if loaded
+            if (iconMaxTexID != 0) {
+                DrawImage(iconMinTexID, gScreenW - closebtnSize * 3 - 20.0f, iconY, 30, 30);
+
+                if (minHover && gMousePressed) {
+                    GLwinMinimizeWindow(gMainWindow);
+                }
             }
         }
 		// ------------------------ END MINIMIZE BUTTON --------------------
 		
-
-        // --- Close button ---
-  //      float btnSize = gTitleButton - 8.0f; // padding from top/bottom
-  //      float btnY = 4.0f;
-
-        //float cr = 0.15f, cg = 0.15f, cb = 0.17f;
-        //float closeX = gScreenW - btnSize - 4.0f; // align right
-        //bool closeHover = (gMouseX >= closeX && gMouseX <= closeX + btnSize &&
-        //    gMouseY >= btnY && gMouseY <= btnY + btnSize);
-        //if (closeHover) { cr = 0.22f; cg = 0.22f; cb = 0.24f; } // brighter on hover
-        //DrawRect(closeX, btnY, btnSize, btnSize, cr, cg, cb);
-        //DrawText(closeX + btnSize * 0.3f, btnY + 2, "X", 1.0f, 1.0f, 1.0f);
-
-		//if (closeHover && pressed) {
-  //          GLwinWindowShouldClose(gMainWindow, 1);
-		//}
-  //      // maximize / restore
-  //      float maxX = closeX - btnSize - 4.0f;
-        //bool maxHover = (gMouseX >= maxX && gMouseX <= maxX + btnSize &&
-        //    gMouseY >= btnY && gMouseY <= btnY + btnSize);
-        //if (maxHover) { cr = 0.22f; cg = 0.22f; cb = 0.24f; } // brighter on hover
-        //DrawRect(maxX, btnY, btnSize, btnSize, cr, cg, cb);
-        //DrawText(maxX + btnSize * 0.25f, btnY + 2, "[ ]", 1.0f, 1.0f, 1.0f);
-
-  //      if (maxHover && gMousePressed) {
-  //          // Toggle maximize / restore
-  //          static bool maximized = false;
-  //          if (maximized) {
-  //              GLwinRestoreWindow(gMainWindow); // you’ll need to implement this
-  //          }
-  //          else {
-  //              GLwinMaximizeWindow(gMainWindow); // you’ll need to implement this
-  //          }
-  //          maximized = !maximized;
-  //      }
-
-  //      // Minimize button (leftmost)
-  //      float minX = maxX - btnSize - 4.0f;
-  //      bool minHover = (gMouseX >= minX && gMouseX <= minX + btnSize &&
-  //          gMouseY >= btnY && gMouseY <= btnY + btnSize);
-  //      if (minHover) { cr = 0.22f; cg = 0.22f; cb = 0.24f; } // brighter on hover
-  //      DrawRect(minX, btnY, btnSize, btnSize, cr, cg, cb);
-  //      DrawText(minX + btnSize * 0.3f, btnY + 2, "_", 1, 1, 1);
-
-  //      if (minHover && gMousePressed) {
-  //          GLwinMinimizeWindow(gMainWindow); // you’ll need to implement this
-  //      }
-  //     
-
-
         // ------ Hover check in SCREEN coordinates over the actual client area ------
         // Client origin in screen coords was updated in main: gClientScreenX/Y
         int barLeft = gClientScreenX;
