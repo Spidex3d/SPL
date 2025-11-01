@@ -3,14 +3,21 @@ dec_i x = 10 * 10 / 2;
 pout x;
 dec_i index = 5 * 10 / 2;
 pout index;
+dec_i num = 34 + 34;
+pout num;
 // testing comments
 dec_i number1; 
 number1 = 141; 
 pout number1;
 
+pout "----- STRING TESTS -----";
 dec_s name;
 name = "Martyn";
 pout name;
 
 dec_s greeting = "Hello, World";
 pout greeting;
+// string concatenation
+dec_s msg = "Hello " + name + " your age is " + num + "!";
+
+pout msg;

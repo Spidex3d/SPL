@@ -2,10 +2,8 @@
 #include <string>
 #include <unordered_map>
 
-// TOKEN_IDENTIFIER: identifiers (variable names, function names, etc.) looking for letters or digits
-// TOKEN_INT: integer literals (numbers)
-// TOKEN_LEFT_PAREN = ( - TOKEN_RIGHT_PAREN = )
-// TOKEN_LEFT_CURL_PAREN = { - TOKEN_RIGHT_CURL_PAREN = }
+
+// Token types enumeration 
 enum type {
 	TOKEN_IDENTIFIER,
 	TOKEN_INT,
@@ -32,15 +30,15 @@ enum type {
 	TOKEN_DEC_I,
 	TOKEN_DEC_S,
 	TOKEN_DEC_F,
-	// End of file token
+	// End of file token to stop memory leaks
 	TOKEN_EOF
 };
-
+// Token structure
 struct Token {
 	enum type TYPE;
 	std::string VALUE;
 };
-
+// Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"if", TOKEN_IF},
 	{"while", TOKEN_WHILE},
