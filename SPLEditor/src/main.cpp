@@ -104,12 +104,44 @@ int main() {
 	while (!GLwinWindowShouldClose(window, 0)) {
 		GLwinPollEvents();
 
+		double cx, cy;
+		GLwinGetCursorPos(window, &cx, &cy);
+		int fbw, fbh;
+		GLwinGetFramebufferSize(window, &fbw, &fbh);
+		int w, h;
+		SpxGui::UpdateScreenSize(fbw, fbh);
+		glViewport(0, 0, fbw, fbh);
+		SpxGui::SetScreenSize(fbw, fbh);
+
+		SpxGui::MenuInit();
+
+		bool downNow = (GLwinGetMouseButton(window, GLWIN_MOUSE_BUTTON_LEFT) == GLWIN_PRESS);
+
+		static bool prevDown = false;
+		SpxGui::pressed = (downNow && !prevDown);
+		SpxGui::released = (!downNow && prevDown);
+		SpxGui::down = downNow;
+		prevDown = downNow;
+
+		if (SpxGui::gCurrent) {
+			SpxGui::gCurrent->mouseX = (float)cx;
+			SpxGui::gCurrent->mouseY = (float)cy;	
+		}
+
 		if (GLwinGetKey(window, GLWIN_ESCAPE) == GLWIN_PRESS) {
 			GLwinWindowShouldClose(window, 1);
 		}
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		SpxGui::NewFrame((float)cx, (float)cy, downNow, SpxGui::pressed, SpxGui::released, fbw, fbh);
+
+		SpxGui::RenderMenuBar();
+
+		SpxGui::activeToolBar();
+
+		SpxGui::Render();
 		
 		GLwinSwapBuffers(window);
 
