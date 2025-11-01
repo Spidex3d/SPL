@@ -8,6 +8,16 @@ code generator
 assembly -> machine code
 Code a Minimal Assembler from Scratch 
 
+<iostream>
+<fstream>
+<sstream>
+<vector>
+<string>
+<unordered_map>
+<stdexcept>
+<stdexcept>
+
+
 
 
 ### The New Visual Basic ####
