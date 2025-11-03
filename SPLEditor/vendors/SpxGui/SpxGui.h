@@ -450,7 +450,7 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
                 break;
 
             case 1:
-                filename = GLwinSaveDialog();
+                //filename = GLwinSaveDialog();
                 if (!filename.empty()) {
                     // Save to this file...
                 }
@@ -459,7 +459,7 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
                 break;
 
             case 2:
-                filename = GLwinSaveDialog();
+               // filename = GLwinSaveDialog();
                 if (!filename.empty()) {
                     // Save to this file...
                 }

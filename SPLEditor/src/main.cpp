@@ -2,9 +2,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "glad\glad.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
+//#include <fstream>
+//#include <sstream>
+//#include <vector>
 // GLwin for window
 #include "GLwin\include\GLwin.h"
 #include "GLwin\include\GLwinLOG.h"
@@ -12,14 +12,8 @@
 #include "SpxGui\SpxGui.h"
 #include "SpxGui\SpxGuiWidgets.h"
 #include "SpxGui\Helpers.h" 
-
-
-#include "lexer.h"
-#include "parsing.h"
-#include "interpreter.h"
-#include "splHelper.h"
-
-// #include "SPLCore.h"  ------------ not needed for this main.cpp test file just now -----------
+// SPL Core for Interpreter / Compiler
+#include "SPLCore.h"
 
 
 int main() {
@@ -56,7 +50,10 @@ int main() {
 	glGetString(GL_VERSION);
 	GLWIN_LOG_INFO("OpenGL Version: " << glGetString(GL_VERSION));
 
-	// hard-coded test file (must be in the same folder as your .exe or give full path)
+	// ------------------------- End of Window initialization -------------------------
+
+	 //hard-coded test file for now load from open dialog later or file tree
+	/*
 	std::ifstream sourceFileStream("test.spl");
 	if (!sourceFileStream) {
 		std::cerr << "Error: could not open file test.spl" << std::endl;
@@ -67,40 +64,21 @@ int main() {
 	buffer << sourceFileStream.rdbuf(); // simpler way to read entire file
 
 	std::string sourceCode = buffer.str();
-	// Print the source code
-	//std::cout << "Source Code:\n" << sourceCode << std::endl;
-	// Tokenize the source code
-	Lexer lexer(sourceCode);
-	std::vector<Token *> tokens = lexer.tokenize();
-
-	// Parse the tokens
-	Parser parser(tokens);
-	Interpreter interp;
 	
-	try {
-		while (true)
-		{
-			Statement* stmt = parser.parseStatement();
-			if (stmt == nullptr) {
-				if (parser.peek()->TYPE == TOKEN_EOF) break;
-				else continue;
-				}
-			 interp.execute(stmt);
-		}
-		
-	} 
-	catch (std::runtime_error& e) {
-			// Assuming the error is due to end of input
-			std::cout << "Parsing completed." << e.what() << std::endl;
+	*/
+
+	// run the Compiler / Interpreter
+	std::string code;
+	if (SPL::loadCodeFromFile("test.spl", code)) {
+		SPL::RunCode(code);
+		GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
+
 	}
-	// Debug: print all tokens
-	//printTokens(tokens);
-
-	
-	GLWIN_LOG_INFO("This is the end of the program");
-
-	freeTokens(tokens);
-
+	else {
+			GLWIN_LOG_ERROR("Failed to load SPL code from file.");
+					
+	}
+		
 	while (!GLwinWindowShouldClose(window, 0)) {
 		GLwinPollEvents();
 
@@ -151,8 +129,8 @@ int main() {
 		}
 	}
 
-
-
+	//freeTokens(tokens);
+	GLWIN_LOG_INFO("This is the end of the program");
 	return 0;
 
 	
