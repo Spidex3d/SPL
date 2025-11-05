@@ -27,8 +27,29 @@ namespace SPL {
 	
 
 	}
+
+	//bool GetProjectCode(const std::string& projectPath, const std::string& projectMainFile) {
+
+	//	std::string fullPath = projectPath + "\\" + projectMainFile;
+	//	// Load code from the main file
+	//	std::string code;
+	//	if (!SPL::loadCodeFromFile(fullPath, code)) {
+	//		std::cerr << "Error: could not open .spl file" << fullPath << std::endl;
+	//		return false;
+	//	}
+	//	// Run the loaded code
+	//	if (!SPL::RunCode(code)) {
+	//		std::cerr << "Failed: to run main file" << fullPath << std::endl;
+	//		return false;
+	//	}
+	//	return true;
+	//}
+
+
+
+
 	// Runs SPL code from a source string in the editor just call RucCode(editorText.spl)
-    void RunCode(const std::string& source) {
+    void RunProjectCode(const std::string& source) {
         Lexer lexer(source);
         std::vector<Token*> tokens = lexer.tokenize();
 

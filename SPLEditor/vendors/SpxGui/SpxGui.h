@@ -6,6 +6,7 @@
 #include "Helpers.h"
 #include "../vendors/GLwin/include/GLwin.h"
 #include "../vendors/GLwin/include/GLwinDefs.h"
+
 #include "stb/stb_image.h" // Include stb_image.h for image loading
 #include "stb\stb_truetype.h" // Include stb_truetype.h for font rendering
 #include <unordered_map>
@@ -435,26 +436,29 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
         }
     }
 	inline std::string filename = "";
-	
+	inline std::string projectFolder = "";
+    bool RunCode = false;
 	// Toolbar action handler Bottom Row
     inline void activeToolBar() {
         if (SpxGui::gActiveTool >= 0) {
             switch (SpxGui::gActiveTool) {
             case 0:
-                filename = GLwinOpenDialog();
-                if (!filename.empty()) {
-                    // Save to this file...
+               projectFolder = OpenFolderDialog();
+				               
+                if (!projectFolder.empty()) {
+                    // Set this folder as the active project...
                 }
-                std::cout << "Open File action triggered\n";
+                std::cout << "Open A Project and add it to the tree\n";
                 // TODO: add your file open dialog here
                 break;
 
             case 1:
                 //filename = GLwinSaveDialog();
+
                 if (!filename.empty()) {
                     // Save to this file...
                 }
-                std::cout << "Save File action triggered\n";
+                std::cout << "Save The Project\n";
                 // TODO: save current scene/project
                 break;
 
@@ -466,12 +470,13 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
                 std::cout << "Save As action triggered\n";
                 break;
 
-            case 3:
-                std::cout << "Run action triggered\n";
+            case 3: // Run project
+				RunCode = true;
                 break;
 
             case 4:
                 std::cout << "Stop action triggered\n";
+				RunCode = false;
                 break;
             }
 

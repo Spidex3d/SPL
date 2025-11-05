@@ -5,20 +5,9 @@ code a lexer
 Defining your grammer ## Syntex ##
 code a parser
 code generator
+Code Editor using SpxGui
 assembly -> machine code
 Code a Minimal Assembler from Scratch 
-
-<iostream>
-<fstream>
-<sstream>
-<vector>
-<string>
-<unordered_map>
-<stdexcept>
-<stdexcept>
-
-
-
 
 ### The New Visual Basic ####
 
@@ -26,7 +15,6 @@ Code a Minimal Assembler from Scratch
 start and end syntext
 
 // This is a comment
-
 
 < less_than
 > more_than
@@ -41,50 +29,66 @@ includes -: to
 #adding "string.spxh"
 #adding "maths.spxh"
 
-put 4 in to test & its an int
-int test in 4;
-out test
+Why not use templates
 
-dec name as string	// delare a string	
-name = "Martyn";
-pout name;
-
-Why not use templates for every thing
-func: this is a function
 make functions extern so usable in all forms
-start func: add x + y
+func: add x + y
 x + y
-end func:
+end func():
 
 add x: foo, y: bar
 
 
-mod main()            // Start the main modual
+mod main()            // Start the main modual int
+
+dec_s name;	// delare a string	
+name = "Martyn";
+pout name;
+
 
 dec_s name   	     // delare a string	
 dec_i test1   	     // delare an interger 
 dec_f test2    	     // delare an float
 dec_d salary    	 // delare an decimal
+dec_dd bigNumber     // delare an double 
 dec_bool window is_true or is_false  // delare a boolean
 
 test1 = 4		        //put value 4 in to test1
 test2 = 1.0f	        //put value 1.0 in to test2
-
-
-
 name = "martyn"
-working()           // main loop
 
-    branch(index)       // start a branch
-      twig 1:       // start a twig)
-      pout name;    // print out name Martyn
+           
+runIt()   // main loop  bool
 
-      twig 2:       // start a twig)
-      twig 3:       // start a twig)
+loopIt(int i = 0; i < (int)gToolbar.size(); ++i)   // Replacment for for loop
+   
 
-Endworking;	// End main Loop
+isIt 0 (!sourceFileStream)  // replacment for if statment
+    pout "File not found!";
+    endIt;
 
-Endmod;		// End the main modual 
+    isIt 1
+    pout "File not found!";
+    endIt
+
+    isIt 2
+    pout "File not found!";
+    endIt;
+
+endloopIt
+
+moveTo(index) {  //Replaces  switch case
+    
+    move 0:
+    move 1:
+    move 2:
+    move 3:
+    }
+
+
+run_It_end	// End main Loop
+
+Endmod();		// End the main modual 
 
 from test.spl
 
@@ -99,9 +103,3 @@ if (x == 5) {
 }
 foo123 = 10;
 
-Reading from the .spl file!
-Lexer error: unexpected character '_' at position 4
-Lexer error: unexpected character '+' at position 13
-Lexer error: unexpected character '_' at position 22
-Parsing completed.Expected '='
-This is the end of the program

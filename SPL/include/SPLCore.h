@@ -5,5 +5,6 @@
 namespace SPL {
 
 	bool loadCodeFromFile(const std::string& filepath, std::string& outSource);
-    void RunCode(const std::string& source);
+	//bool GetProjectCode(const std::string& projectPath, const std::string& projectMainFile);
+    void RunProjectCode(const std::string& source);
 }

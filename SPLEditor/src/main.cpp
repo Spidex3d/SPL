@@ -11,7 +11,7 @@
 // SpxGui for GUI
 #include "SpxGui\SpxGui.h"
 #include "SpxGui\SpxGuiWidgets.h"
-#include "SpxGui\Helpers.h" 
+ 
 // SPL Core for Interpreter / Compiler
 #include "SPLCore.h"
 
@@ -19,7 +19,7 @@
 int main() {
 
 	GLWIN_LOG_INFO("Starting SPL Interpreter. Editor");
-
+	// ------------------------- GLwin Window initialization -------------------------
 	GLWIN_window* window = GLwin_CreateWindow(800, 600, L"SPL Code Editor 2025");
 
 	if (!window) {
@@ -29,6 +29,8 @@ int main() {
 
 	GLwinEnableCustomTitleBar(window, 1); // enable custom title bar
 	GLwinMakeContextCurrent(window);
+
+	// Set global main window pointer for SpxGui
 	SpxGui::gMainWindow = window;
 	GLwinSetCharCallback(window, SpxGui::CharCallback);
 	GLwinSetKeyCallback(window, SpxGui::KeyCallback);
@@ -51,34 +53,22 @@ int main() {
 	GLWIN_LOG_INFO("OpenGL Version: " << glGetString(GL_VERSION));
 
 	// ------------------------- End of Window initialization -------------------------
-
-	 //hard-coded test file for now load from open dialog later or file tree
-	/*
-	std::ifstream sourceFileStream("test.spl");
-	if (!sourceFileStream) {
-		std::cerr << "Error: could not open file test.spl" << std::endl;
-		return 1;
-	}
-
-	std::stringstream buffer;
-	buffer << sourceFileStream.rdbuf(); // simpler way to read entire file
-
-	std::string sourceCode = buffer.str();
-	
-	*/
-
+		
 	// run the Compiler / Interpreter
-	std::string code;
+	/*std::string code;
 	if (SPL::loadCodeFromFile("test.spl", code)) {
-		SPL::RunCode(code);
+		SPL::RunProjectCode(code);
 		GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
 
 	}
 	else {
-			GLWIN_LOG_ERROR("Failed to load SPL code from file.");
+		GLWIN_LOG_ERROR("Failed to load SPL code from file.");
 					
-	}
-		
+	}*/
+
+	static SpxGui::SpxGuiTreeView root = SpxGui::LoadDirectory("../SPLEditor");
+	std::string code;
+	//bool RunCode = false;
 	while (!GLwinWindowShouldClose(window, 0)) {
 		GLwinPollEvents();
 
@@ -112,6 +102,64 @@ int main() {
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		// Editor File Explorer set up
+		int treeWidth = 250;
+		int tabWidth = fbw - treeWidth;
+		int tabHeight = fbh - SpxGui::gMenuBarHeight;
+
+		{
+			SpxGui::Begin("File Explorer", nullptr, 1);
+			SpxGui::gCurrent->curWinX = 0;
+			SpxGui::gCurrent->curWinY = SpxGui::gMenuBarHeight;
+			SpxGui::gCurrent->curWinW = treeWidth;
+			SpxGui::gCurrent->curWinH = tabHeight;
+
+			SpxGui::DrawFileNode(root);
+
+			SpxGui::End();
+
+		}
+
+		// Editor Tabs set up
+		
+			SpxGui::Begin("Editor Tabs", nullptr, 2);
+			SpxGui::gCurrent->curWinX = treeWidth;
+			SpxGui::gCurrent->curWinY = SpxGui::gMenuBarHeight;
+			SpxGui::gCurrent->curWinW = tabWidth;
+			SpxGui::gCurrent->curWinH = tabHeight;
+			// Display opened files in tabs
+			if (SpxGui::BeginTabBar("FileTabs")) {
+				for (size_t i = 0; i < SpxGui::gOpenFiles.size(); i++) {
+					auto& f = SpxGui::gOpenFiles[i];
+					if (SpxGui::BeginTabItem(f.name.c_str())) {
+						SpxGui::gActiveTab = (int)i;
+						static char buf[265] = "Input Text";
+
+						SpxGui::MultiLineText(f.name.c_str(), f.buffer, tabWidth - 30.0f, tabHeight - 60.0f);
+						
+						SpxGui::EndTabItem();
+					}
+				}
+
+				SpxGui::EndTabBar();
+			}
+			SpxGui::End();
+		
+			if (SpxGui::RunCode) {
+				if (SPL::loadCodeFromFile("test.spl", code)) {
+					SPL::RunProjectCode(code);
+					GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
+
+				}
+				else {
+					GLWIN_LOG_ERROR("Failed to load SPL code from file.");
+
+				}
+				SpxGui::RunCode = false;
+			}
+
+
 
 		SpxGui::NewFrame((float)cx, (float)cy, downNow, SpxGui::pressed, SpxGui::released, fbw, fbh);
 
