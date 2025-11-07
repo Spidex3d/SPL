@@ -454,11 +454,7 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
                 break;
 
             case 1:
-                //filename = GLwinSaveDialog();
-
-                if (!filename.empty()) {
-                    // Save to this file...
-                }
+                
 				SaveCode = true;
                 std::cout << "Save This Code\n";
                 // TODO: save current scene/project
@@ -473,6 +469,7 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
                 break;
 
             case 3: // Run project
+				SaveCode = true; // auto save before run
 				RunCode = true;
                 break;
 

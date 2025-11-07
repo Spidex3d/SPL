@@ -168,6 +168,7 @@ int main() {
 
 				}
 				SpxGui::RunCode = false;
+				SpxGui::SaveCode = false;
 			}
 
 
