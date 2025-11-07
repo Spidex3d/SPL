@@ -134,10 +134,21 @@ int main() {
 					auto& f = SpxGui::gOpenFiles[i];
 					if (SpxGui::BeginTabItem(f.name.c_str())) {
 						SpxGui::gActiveTab = (int)i;
-						static char buf[265] = "Input Text";
+
 
 						SpxGui::MultiLineText(f.name.c_str(), f.buffer, tabWidth - 30.0f, tabHeight - 60.0f);
-						
+
+						if (SpxGui::SaveCode) {
+							if (SpxGui::SaveOpenFile((int)i)) {
+								std::cout << "Saved file: " << f.path << std::endl;
+							}
+							else {
+								std::cerr << "Save failed for: " << f.name << std::endl;
+							}
+							SpxGui::SaveCode = false;
+						}
+					
+
 						SpxGui::EndTabItem();
 					}
 				}

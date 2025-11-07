@@ -438,6 +438,7 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
 	inline std::string filename = "";
 	inline std::string projectFolder = "";
     bool RunCode = false;
+	bool SaveCode = false;
 	// Toolbar action handler Bottom Row
     inline void activeToolBar() {
         if (SpxGui::gActiveTool >= 0) {
@@ -458,7 +459,8 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
                 if (!filename.empty()) {
                     // Save to this file...
                 }
-                std::cout << "Save The Project\n";
+				SaveCode = true;
+                std::cout << "Save This Code\n";
                 // TODO: save current scene/project
                 break;
 
@@ -700,6 +702,47 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
 
         return root;
     }
+	// ----------------------------- Save and update the spl file ---------------------------------------
+    // 
+    // (append these helpers near the other file I/O / OpenFile functions)
+    inline bool SaveOpenFile(int index) {
+        if (index < 0 || index >= (int)gOpenFiles.size()) {
+            std::cerr << "[SpxGui::SaveOpenFile] invalid index: " << index << std::endl;
+            return false;
+        }
+        OpenFile& f = gOpenFiles[index];
+        if (f.path.empty()) {
+            std::cerr << "[SpxGui::SaveOpenFile] file has no path (use SaveAs): " << f.name << std::endl;
+            return false;
+        }
+
+        std::ofstream ofs(f.path, std::ios::binary);
+        if (!ofs) {
+            std::cerr << "[SpxGui::SaveOpenFile] Failed to open for writing: " << f.path << std::endl;
+            return false;
+        }
+
+        ofs << f.buffer;
+        ofs.close();
+
+        if (!ofs) {
+            std::cerr << "[SpxGui::SaveOpenFile] Write failed: " << f.path << std::endl;
+            return false;
+        }
+
+        f.modified = false;
+        std::cout << "[SpxGui::SaveOpenFile] Saved: " << f.path << std::endl;
+        return true;
+    }
+
+    inline bool SaveActiveFile() {
+        if (gActiveTab < 0 || gActiveTab >= (int)gOpenFiles.size()) {
+            std::cerr << "[SpxGui::SaveActiveFile] no active tab\n";
+            return false;
+        }
+        return SaveOpenFile(gActiveTab);
+    }
+
 
     inline  static std::vector<char> textBuffer;
     // jump up 243
