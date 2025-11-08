@@ -1,0 +1,7 @@
+dec_i age = 2*34;
+// set the age
+
+dec_s name;
+name = "Martyn";
+dec_s msg = "Hello " + name + " you are " + age + " ! ";
+pout msg;

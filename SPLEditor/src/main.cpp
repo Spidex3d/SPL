@@ -2,13 +2,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "glad\glad.h"
 #include <iostream>
-//#include <fstream>
-//#include <sstream>
-//#include <vector>
-// GLwin for window
+
+// GLwin for editor window
 #include "GLwin\include\GLwin.h"
 #include "GLwin\include\GLwinLOG.h"
-// SpxGui for GUI
+// SpxGui for editor GUI
 #include "SpxGui\SpxGui.h"
 #include "SpxGui\SpxGuiWidgets.h"
  
@@ -20,7 +18,7 @@ int main() {
 
 	GLWIN_LOG_INFO("Starting SPL Interpreter. Editor");
 	// ------------------------- GLwin Window initialization -------------------------
-	GLWIN_window* window = GLwin_CreateWindow(800, 600, L"SPL Code Editor 2025");
+	GLWIN_window* window = GLwin_CreateWindow(800, 600, L"SPL Basic 2025");
 
 	if (!window) {
 		GLWIN_LOG_ERROR("Failed to create window");
@@ -54,19 +52,7 @@ int main() {
 
 	// ------------------------- End of Window initialization -------------------------
 		
-	// run the Compiler / Interpreter
-	/*std::string code;
-	if (SPL::loadCodeFromFile("test.spl", code)) {
-		SPL::RunProjectCode(code);
-		GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
-
-	}
-	else {
-		GLWIN_LOG_ERROR("Failed to load SPL code from file.");
-					
-	}*/
-
-	static SpxGui::SpxGuiTreeView root = SpxGui::LoadDirectory("../SPLEditor");
+	static SpxGui::SpxGuiTreeView root = SpxGui::LoadDirectory("../SPLEditor"); // Set projects path
 	std::string code;
 	//bool RunCode = false;
 	while (!GLwinWindowShouldClose(window, 0)) {
@@ -140,13 +126,29 @@ int main() {
 
 						if (SpxGui::SaveCode) {
 							if (SpxGui::SaveOpenFile((int)i)) {
-								std::cout << "Saved file: " << f.path << std::endl;
+								GLWIN_LOG_INFO("Saved file: " << f.path);
 							}
 							else {
-								std::cerr << "Save failed for: " << f.name << std::endl;
+								GLWIN_LOG_ERROR("Save failed for: " << f.name);
 							}
 							SpxGui::SaveCode = false;
 						}
+
+						if (SpxGui::RunCode) {
+							//if (SPL::loadCodeFromFile("test.spl", code)) {
+							if (SPL::loadCodeFromFile(f.name, code)) {
+								SPL::RunProjectCode(code);
+								GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
+
+							}
+							else {
+								GLWIN_LOG_ERROR("Failed to load SPL code");
+
+							}
+							SpxGui::RunCode = false;
+							SpxGui::SaveCode = false;
+						}
+
 					
 
 						SpxGui::EndTabItem();
@@ -157,19 +159,19 @@ int main() {
 			}
 			SpxGui::End();
 		
-			if (SpxGui::RunCode) {
+			/*if (SpxGui::RunCode) {
 				if (SPL::loadCodeFromFile("test.spl", code)) {
 					SPL::RunProjectCode(code);
 					GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
 
 				}
 				else {
-					GLWIN_LOG_ERROR("Failed to load SPL code from file.");
+					GLWIN_LOG_ERROR("Failed to load SPL code");
 
 				}
 				SpxGui::RunCode = false;
 				SpxGui::SaveCode = false;
-			}
+			}*/
 
 
 

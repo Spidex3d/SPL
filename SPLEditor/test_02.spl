@@ -7,9 +7,9 @@ code a parser
 code generator
 Code Editor using SpxGui
 assembly -> machine code
-Code a Minimal Assembler from Scratch 
+Code a Minimal Assembler from Scratch much like NASM but for my new language
 
-### The New Visual Basic ####
+### The New spl Basic ####
 
 ## Syntex
 start and end syntext
@@ -18,40 +18,37 @@ start and end syntext
 
 < less_than
 > more_than
-if 
-comp (foo with bar
-! if knot somthing
+i 
+
 List & arrays
 vector will be vector as i cant see an alternativee 
-global 
+map
+templates
+
 
 includes -: to
 #adding "string.spxh"
 #adding "maths.spxh"
 
 Why not use templates
-
-make functions extern so usable in all forms
-func: add x + y
-x + y
-end func():
-
-add x: foo, y: bar
+every thing is a module like functions and classes
+mod = module  
 
 
-mod main()            // Start the main modual int
+mod main();            // Start the main modual
+modEnd();          // End the main modual
 
 dec_s name;	// delare a string	
 name = "Martyn";
 pout name;
 
 
-dec_s name   	     // delare a string	
-dec_i test1   	     // delare an interger 
-dec_f test2    	     // delare an float
-dec_d salary    	 // delare an decimal
-dec_dd bigNumber     // delare an double 
-dec_bool window is_true or is_false  // delare a boolean
+dec_s name   	     // declare a string	
+dec_i test1   	     // declare an interger 
+dec_f test2    	     // declare an float
+dec_d salary    	 // declare an decimal
+dec_dd bigNumber     // declare an double 
+dec_bool window is_true or is_false  // declare a boolean
 
 test1 = 4		        //put value 4 in to test1
 test2 = 1.0f	        //put value 1.0 in to test2

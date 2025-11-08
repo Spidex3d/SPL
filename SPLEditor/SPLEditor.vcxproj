@@ -143,6 +143,10 @@
       <Project>{d2410d1d-0b8c-4f28-836a-65dbbf607638}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="main.spl" />
+    <None Include="test.spl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

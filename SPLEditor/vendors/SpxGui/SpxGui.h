@@ -681,6 +681,7 @@ inline char* activeBuf = nullptr; // later for multiple text boxes
    
 	// Load directory structure into SpxGuiTreeView
     inline SpxGuiTreeView LoadDirectory(const std::string& path) {
+        
         SpxGuiTreeView root;
         root.name = path;
         root.fullPath = path;
