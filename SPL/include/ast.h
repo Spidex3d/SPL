@@ -39,6 +39,35 @@ struct BinaryExpr : Expression {
 
 // ----- Statements -----
 struct Statement : ASTNode {};
+
+// ----- Statements ----- MODULE module_name { body }
+struct Module : ASTNode {
+    std::string name;
+	std::vector<std::string> params;
+    std::vector<Statement*> body;
+    Module(const std::string& n, std::vector<std::string> p, std::vector<Statement*> b)
+        : name(n), params(std::move(p)), body(std::move(b)) {
+    }
+};
+
+struct CallExpr : Expression {
+	std::string moduleName;
+	std::vector<Expression*> args;
+	CallExpr(const std::string& name, std::vector<Expression*> a)
+		: moduleName(name), args(std::move(a)) {
+	}
+};
+
+struct ReturnStmt : Statement {
+	Expression* value;
+	explicit ReturnStmt(Expression* v) : value(v) {}
+};
+struct ExprStmt : Statement {
+	Expression* expr;
+	explicit ExprStmt(Expression* e) : expr(e) {}
+};
+
+
 // ----- Statements ----- DECLARATION type name = value;
 struct Declaration : Statement {
     std::string name;

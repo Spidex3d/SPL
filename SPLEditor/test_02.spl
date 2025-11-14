@@ -35,8 +35,16 @@ every thing is a module like functions and classes
 mod = module  
 
 
-mod main();            // Start the main modual
-modEnd();          // End the main modual
+mod main();            // Start the main modual the entry point
+    dec_i age;         // declare an interger
+    age = 2 * 34;     // put value 68 in to age
+    dec_s name;       // declare a string
+    name = "Martyn";  // put value Martyn in to name
+    dec_s msg;        // declare a string
+    msg = "Hello " + name + " you are " + age + " ! "; // put value Hello Martyn you are 68 !  in to msg
+    pout msg;         // print out the msg string
+modEnd();          // End the modual
+
 
 dec_s name;	// delare a string	
 name = "Martyn";

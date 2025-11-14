@@ -11,6 +11,7 @@ enum type {
 	// Single-character tokens
 	TOKEN_EQUALS,
 	TOKEN_SEMICOLON,
+	TOKEN_COMMA,
 	TOKEN_LEFT_PAREN,
 	TOKEN_RIGHT_PAREN,
 	TOKEN_LEFT_CURL_PAREN,
@@ -21,6 +22,9 @@ enum type {
 	TOKEN_SLASH,
 	TOKEN_COMMENT,
 	// Key words
+	// TOKEN_MOD for module all code between TOKEN_MOD and TOKEN_MODEND will be treated as a module
+	TOKEN_MOD,     
+	TOKEN_MODEND,  
 	TOKEN_POUT,
 	TOKEN_IF,
 	TOKEN_WHILE,
@@ -40,12 +44,14 @@ struct Token {
 };
 // Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
-	{"if", TOKEN_IF},
-	{"while", TOKEN_WHILE},
-	{"return", TOKEN_RETURN},
-	{"pout", TOKEN_POUT},
-	{"dec_i", TOKEN_DEC_I},
-	{"dec_s", TOKEN_DEC_S},
-	{"dec_f", TOKEN_DEC_F}
+	{"if",		TOKEN_IF},
+	{"while",	TOKEN_WHILE},
+	{"return",	TOKEN_RETURN},
+	{"mod",		TOKEN_MOD},
+	{"modEnd",	TOKEN_MODEND},
+	{"pout",	TOKEN_POUT},
+	{"dec_i",	TOKEN_DEC_I},
+	{"dec_s",	TOKEN_DEC_S},
+	{"dec_f",	TOKEN_DEC_F}
 };
 

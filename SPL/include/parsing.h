@@ -12,6 +12,10 @@ public:
         : tokens(toks), pos(0) {
     }
 
+	Module* parseModule();
+	std::vector<Module*> parseProgram();
+	std::vector<Expression*> parseArgList(); // helper
+
     // Parse one statement
     Statement* parseStatement();
 

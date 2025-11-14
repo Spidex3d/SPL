@@ -8,7 +8,6 @@ Lexer::Lexer(const std::string& sourceCode)
 	: source(sourceCode), cursor(0), size(sourceCode.length()),
 		current(sourceCode.empty() ? '\0' : sourceCode[0]) {}
 
-
 char Lexer::advance()
 {
 	if (cursor < size) {
@@ -114,6 +113,11 @@ std::vector<Token*> Lexer::tokenize()
 					break;
 				case ';':
 					tokenID = new Token{ TOKEN_SEMICOLON, ";" };
+					tokens.push_back(tokenID);
+					advance();
+					break;
+				case ',':
+					tokenID = new Token{ TOKEN_COMMA, "," };
 					tokens.push_back(tokenID);
 					advance();
 					break;

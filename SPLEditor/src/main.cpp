@@ -159,22 +159,7 @@ int main() {
 			}
 			SpxGui::End();
 		
-			/*if (SpxGui::RunCode) {
-				if (SPL::loadCodeFromFile("test.spl", code)) {
-					SPL::RunProjectCode(code);
-					GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
-
-				}
-				else {
-					GLWIN_LOG_ERROR("Failed to load SPL code");
-
-				}
-				SpxGui::RunCode = false;
-				SpxGui::SaveCode = false;
-			}*/
-
-
-
+			
 		SpxGui::NewFrame((float)cx, (float)cy, downNow, SpxGui::pressed, SpxGui::released, fbw, fbh);
 
 		SpxGui::RenderMenuBar();
