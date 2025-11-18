@@ -28,7 +28,15 @@ enum type {
 	TOKEN_POUT,
 	TOKEN_IF,
 	TOKEN_WHILE,
+	TOKEN_LOOP,
 	TOKEN_RETURN,
+	// Operator
+	TOKEN_INCREMENT,
+	TOKEN_DECREASE,
+	TOKEN_ISLESS,
+	TOKEN_ISMORE,
+	TOKEN_ISEQUAL,
+	TOKEN_ISNOTEQUAL,
 	// declare dec_function token
 	// dec_int, dec_string, dec_float
 	TOKEN_DEC_I,
@@ -44,14 +52,21 @@ struct Token {
 };
 // Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
-	{"if",		TOKEN_IF},
-	{"while",	TOKEN_WHILE},
-	{"return",	TOKEN_RETURN},
-	{"mod",		TOKEN_MOD},
-	{"modEnd",	TOKEN_MODEND},
-	{"pout",	TOKEN_POUT},
-	{"dec_i",	TOKEN_DEC_I},
-	{"dec_s",	TOKEN_DEC_S},
-	{"dec_f",	TOKEN_DEC_F}
+	{"if",			TOKEN_IF},
+	{"while",		TOKEN_WHILE},
+	{"loop",		TOKEN_LOOP},
+	{"return",		TOKEN_RETURN},
+	{"mod",			TOKEN_MOD},
+	{"modEnd",		TOKEN_MODEND},
+	{"++",			TOKEN_INCREMENT}, // ++
+	{"--",			TOKEN_DECREASE},  // --
+	{"isLess",		TOKEN_ISLESS},
+	{"isMore",		TOKEN_ISMORE},
+	{"isEqual",		TOKEN_ISEQUAL},
+	{"isNotEqual",	TOKEN_ISNOTEQUAL},
+	{"pout",		TOKEN_POUT},
+	{"dec_i",		TOKEN_DEC_I},
+	{"dec_s",		TOKEN_DEC_S},
+	{"dec_f",		TOKEN_DEC_F}
 };
 

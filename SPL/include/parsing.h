@@ -27,6 +27,7 @@ public:
 
     // Utility helpers see lexer
     Token* peek();
+    Token* peekNext();
     Token* advance();
     Token* consume(type expected, const std::string& msg);
     // match helper used in error handling

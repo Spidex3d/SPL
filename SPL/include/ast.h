@@ -58,6 +58,11 @@ struct CallExpr : Expression {
 	}
 };
 
+struct IncrementExpr : Expression {
+    std::string name;
+    IncrementExpr(const std::string& n) : name(n) {}
+};
+
 struct ReturnStmt : Statement {
 	Expression* value;
 	explicit ReturnStmt(Expression* v) : value(v) {}
@@ -85,6 +90,15 @@ struct Assignment : Statement {
         : name(n), value(val) {
     }
 };
+
+struct WhileStmt : Statement {
+	Expression* condition;
+	std::vector<Statement*> body;
+	WhileStmt(Expression* cond, std::vector<Statement*> b)
+		: condition(cond), body(std::move(b)) {
+	}
+};
+
 // ----- Statements ----- POUT pout value;
 struct Pout : Statement {
     Expression* value;

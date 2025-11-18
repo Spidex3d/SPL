@@ -106,7 +106,21 @@ void Interpreter::execute(Statement* stmt) {
 		else if (var->varType == TOKEN_DEC_F) var->floatValue = static_cast<float>(evalInt(asn->value));
 		return;
 	}
+	// While loop
+	if (auto* ws = dynamic_cast<WhileStmt*>(stmt)) {
+		while (evalInt(ws->condition) != 0) {
 
+			for (auto* s : ws->body) {
+				if (!s) continue;
+				execute(s);
+
+				if (returning) return; // bubble return out
+			}
+		}
+		return;
+	}
+
+	// Pout statement for printing to console
 	if (auto* pout = dynamic_cast<Pout*>(stmt)) {
 		Expression* e = pout->value;
 		if (isStringExpr(e)) std::cout << evalString(e) << std::endl;
@@ -150,10 +164,14 @@ int Interpreter::evalInt(Expression* expr) {
 		int l = evalInt(bin->left);
 		int r = evalInt(bin->right);
 		switch (bin->op) {
-		case TOKEN_PLUS:  return l + r;
-		case TOKEN_MINUS: return l - r;
-		case TOKEN_STAR:  return l * r;
-		case TOKEN_SLASH: return r == 0 ? 0 : l / r; // simple guard
+		case TOKEN_PLUS:		return l + r;
+		case TOKEN_MINUS:		return l - r;
+		case TOKEN_STAR:		return l * r;
+		case TOKEN_SLASH:		return r == 0 ? 0 : l / r; // simple guard
+		case TOKEN_ISLESS:      return l < r ? 1 : 0;
+		case TOKEN_ISMORE:      return l > r ? 1 : 0;
+		case TOKEN_ISEQUAL:     return l == r ? 1 : 0;
+		case TOKEN_ISNOTEQUAL:  return l != r ? 1 : 0;
 		default: break;
 		}
 	}

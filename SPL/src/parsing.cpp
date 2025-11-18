@@ -92,6 +92,49 @@ Statement* Parser::parseStatement()
         consume(TOKEN_SEMICOLON, "Expected ';' after declaration");
         return new Declaration(id->VALUE, declType, expr);
     }
+	// While loop
+    if (peek()->TYPE == TOKEN_WHILE) {
+        advance(); // consume 'while'
+
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after while");
+
+        // condition is an expression like:  i isless 10
+        Expression* cond = parseExpression();
+
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after while condition");
+        consume(TOKEN_LEFT_CURL_PAREN, "Expected '{' after while(...)");
+
+        std::vector<Statement*> body;
+        while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN) {
+            Statement* s = parseStatement();
+            if (s) body.push_back(s);
+        }
+
+        consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after while body");
+
+        // Optional semicolon after the block
+        match(TOKEN_SEMICOLON);
+
+        return new WhileStmt(cond, std::move(body));
+    }
+
+	// While loop 
+    // i++  =>  i = i + 1;
+    if (peek()->TYPE == TOKEN_IDENTIFIER &&
+        pos + 1 < tokens.size() &&
+        tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
+    {
+        Token* idTok = advance();                    // consume identifier
+        advance();                                   // consume '++'
+        consume(TOKEN_SEMICOLON, "Expected ';' after ++");
+
+        // build: i = i + 1;
+        Expression* one = new IntLiteral(1);
+        Expression* leftId = new Identifier(idTok->VALUE);
+        Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
+
+        return new Assignment(idTok->VALUE, plus);
+    }
 
     // Assignment
     if (peek()->TYPE == TOKEN_IDENTIFIER && tokens[pos + 1]->TYPE == TOKEN_EQUALS) {
@@ -124,7 +167,11 @@ Expression* Parser::parseExpression()
     while (peek()->TYPE == TOKEN_PLUS ||
         peek()->TYPE == TOKEN_MINUS ||
         peek()->TYPE == TOKEN_STAR ||
-        peek()->TYPE == TOKEN_SLASH)
+        peek()->TYPE == TOKEN_SLASH ||
+		peek()->TYPE == TOKEN_ISLESS ||
+		peek()->TYPE == TOKEN_ISMORE ||
+		peek()->TYPE == TOKEN_ISEQUAL ||
+		peek()->TYPE == TOKEN_ISNOTEQUAL)
     {
         type op = advance()->TYPE;
         Expression* right = parsePrimary();
@@ -152,8 +199,20 @@ Expression* Parser::parsePrimary()
             return new CallExpr(t->VALUE, std::move(args));
         }
 
+       // return new Identifier(t->VALUE);
+
+        if (peek()->TYPE == TOKEN_INCREMENT) {
+            advance(); // consume ++
+            // rewrite as:  ident = ident + 1
+            return new BinaryExpr(
+                new Identifier(t->VALUE),
+                TOKEN_INCREMENT, // or just TOKEN_PLUS
+                new IntLiteral(1)
+            );
+        }
 
         return new Identifier(t->VALUE);
+
     }
 
     throw std::runtime_error("Unexpected token in expression: '" + t->VALUE + "'");
@@ -164,6 +223,12 @@ Token* Parser::peek()
 {
 	if (pos >= tokens.size()) return tokens.back(); // assume EOF
 	return tokens[pos];
+}
+
+Token* Parser::peekNext()
+{  
+        if (pos + 1 >= tokens.size()) return tokens.back();
+        return tokens[pos + 1]; 
 }
 
 Token* Parser::advance()

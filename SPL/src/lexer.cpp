@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <iostream>
 #include "../include/lexer.h"
+#include "../include/parsing.h"
 #include "../include/tokens.h"
 
 Lexer::Lexer(const std::string& sourceCode)
@@ -104,6 +105,15 @@ std::vector<Token*> Lexer::tokenize()
 
 			// Handle single-character tokens
 			else {
+				if (current == '+' && peek(1) == '+') {
+					advance();
+					advance();
+					Token* tokenID = new Token{ TOKEN_INCREMENT, "++" };
+					tokens.push_back(tokenID);
+					continue;
+				}
+
+
 				switch (current) {
 
 				case '=':
@@ -142,9 +152,12 @@ std::vector<Token*> Lexer::tokenize()
 					advance();
 					break;
 				case '+':
-					tokenID = new Token{ TOKEN_PLUS, "+" };
-					tokens.push_back(tokenID);
-					advance();
+					
+						tokenID = new Token{ TOKEN_PLUS, "+" };
+						tokens.push_back(tokenID);
+						advance();
+					
+					
 					break;
 				case '-':
 					tokenID = new Token{ TOKEN_MINUS, "-" };
