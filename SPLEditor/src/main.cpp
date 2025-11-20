@@ -18,7 +18,7 @@ int main() {
 
 	GLWIN_LOG_INFO("Starting SPL Interpreter. Editor");
 	// ------------------------- GLwin Window initialization -------------------------
-	GLWIN_window* window = GLwin_CreateWindow(800, 600, L"SPL Basic 2025");
+	GLWIN_window* window = GLwin_CreateWindow(800, 800, L"SPL Basic 2025");
 
 	if (!window) {
 		GLWIN_LOG_ERROR("Failed to create window");

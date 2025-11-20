@@ -136,6 +136,23 @@ Statement* Parser::parseStatement()
         return new Assignment(idTok->VALUE, plus);
     }
 
+    // i--  =>  i = i - 1;
+    if (peek()->TYPE == TOKEN_IDENTIFIER &&
+        pos + 1 < tokens.size() &&
+        tokens[pos + 1]->TYPE == TOKEN_DECREASE)
+    {
+        Token* idTok = advance();                    // consume identifier
+        advance();                                   // consume '++'
+        consume(TOKEN_SEMICOLON, "Expected ';' after --");
+
+        // build: i = i - 1;
+        Expression* one = new IntLiteral(1);
+        Expression* leftId = new Identifier(idTok->VALUE);
+        Expression* minus = new BinaryExpr(leftId, TOKEN_MINUS, one);
+
+        return new Assignment(idTok->VALUE, minus);
+    }
+
     // Assignment
     if (peek()->TYPE == TOKEN_IDENTIFIER && tokens[pos + 1]->TYPE == TOKEN_EQUALS) {
     //if (peek()->TYPE == TOKEN_IDENTIFIER) {
@@ -163,7 +180,8 @@ Statement* Parser::parseStatement()
 Expression* Parser::parseExpression()
 {
     Expression* left = parsePrimary();
-
+	// TOKEN_STAR is times, TOKEN_SLASH is divide
+	// TOKEN_LESS is isless replaces <, TOKEN_MORE is ismore replaces >
     while (peek()->TYPE == TOKEN_PLUS ||
         peek()->TYPE == TOKEN_MINUS ||
         peek()->TYPE == TOKEN_STAR ||
@@ -200,13 +218,23 @@ Expression* Parser::parsePrimary()
         }
 
        // return new Identifier(t->VALUE);
-
+        // part of ++
         if (peek()->TYPE == TOKEN_INCREMENT) {
             advance(); // consume ++
             // rewrite as:  ident = ident + 1
             return new BinaryExpr(
                 new Identifier(t->VALUE),
                 TOKEN_INCREMENT, // or just TOKEN_PLUS
+                new IntLiteral(1)
+            );
+        }
+		// part of --
+        if (peek()->TYPE == TOKEN_DECREASE) {
+            advance(); // consume --
+            // rewrite as:  ident = ident - 1
+            return new BinaryExpr(
+                new Identifier(t->VALUE),
+                TOKEN_DECREASE, // or just TOKEN_PLUS
                 new IntLiteral(1)
             );
         }

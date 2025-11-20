@@ -56,10 +56,10 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"while",		TOKEN_WHILE},
 	{"loop",		TOKEN_LOOP},
 	{"return",		TOKEN_RETURN},
-	{"mod",			TOKEN_MOD},
-	{"modEnd",		TOKEN_MODEND},
-	{"++",			TOKEN_INCREMENT}, // ++
-	{"--",			TOKEN_DECREASE},  // --
+	{"mod",			TOKEN_MOD},			// module
+	{"modEnd",		TOKEN_MODEND},		// module end
+	{"++",			TOKEN_INCREMENT},	// ++
+	{"--",			TOKEN_DECREASE},	// --
 	{"isLess",		TOKEN_ISLESS},
 	{"isMore",		TOKEN_ISMORE},
 	{"isEqual",		TOKEN_ISEQUAL},

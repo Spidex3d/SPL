@@ -102,8 +102,7 @@ std::vector<Token*> Lexer::tokenize()
 				tokenID = new Token{ TOKEN_COMMENT, comment };
 				tokens.push_back(tokenID);
 			}
-
-			// Handle single-character tokens
+			// Handle multi-character operators
 			else {
 				if (current == '+' && peek(1) == '+') {
 					advance();
@@ -112,8 +111,16 @@ std::vector<Token*> Lexer::tokenize()
 					tokens.push_back(tokenID);
 					continue;
 				}
+				if (current == '-' && peek(1) == '-') {
+					advance();
+					advance();
+					Token* tokenID = new Token{ TOKEN_DECREASE, "--" };
+					tokens.push_back(tokenID);
+					continue;
+				}
 
 
+			// Handle single-character tokens
 				switch (current) {
 
 				case '=':
