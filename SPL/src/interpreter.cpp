@@ -120,6 +120,31 @@ void Interpreter::execute(Statement* stmt) {
 		return;
 	}
 
+	// Do loop
+	if (auto* dl = dynamic_cast<DoStmt*>(stmt)) {
+
+		// run init
+		if (dl->init)
+			execute(dl->init);
+
+		// run loop
+		while (evalInt(dl->condition) != 0) {
+
+			for (auto* s : dl->body) {
+				if (!s) continue;
+				execute(s);
+
+				if (returning) return;
+			}
+
+			// run step
+			if (dl->step)
+				execute(dl->step);
+		}
+		return;
+	}
+
+
 	// Pout statement for printing to console
 	if (auto* pout = dynamic_cast<Pout*>(stmt)) {
 		Expression* e = pout->value;
@@ -167,11 +192,11 @@ int Interpreter::evalInt(Expression* expr) {
 		case TOKEN_PLUS:		return l + r;
 		case TOKEN_MINUS:		return l - r;
 		case TOKEN_STAR:		return l * r;
-		case TOKEN_SLASH:		return r == 0 ? 0 : l / r; // simple guard
-		case TOKEN_ISLESS:      return l < r ? 1 : 0;
-		case TOKEN_ISMORE:      return l > r ? 1 : 0;
-		case TOKEN_ISEQUAL:     return l == r ? 1 : 0;
-		case TOKEN_ISNOTEQUAL:  return l != r ? 1 : 0;
+		case TOKEN_SLASH:		return r == 0 ? 0 : l / r;	// simple guard
+		case TOKEN_ISLESS:      return l < r ? 1 : 0;		// left is less than right true = 1, false = 0
+		case TOKEN_ISMORE:      return l > r ? 1 : 0;		// left is more than right true = 1, false = 0
+		case TOKEN_ISEQUAL:     return l == r ? 1 : 0;		// left is equal to right true = 1, false = 0
+		case TOKEN_ISNOTEQUAL:  return l != r ? 1 : 0;		// left is not equal to right true = 1, false = 0
 		default: break;
 		}
 	}

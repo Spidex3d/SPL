@@ -28,7 +28,7 @@ enum type {
 	TOKEN_POUT,
 	TOKEN_IF,
 	TOKEN_WHILE,
-	TOKEN_LOOP,
+	TOKEN_DO,
 	TOKEN_RETURN,
 	// Operator
 	TOKEN_INCREMENT,
@@ -53,8 +53,8 @@ struct Token {
 // Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"if",			TOKEN_IF},
-	{"while",		TOKEN_WHILE},
-	{"loop",		TOKEN_LOOP},
+	{"while",		TOKEN_WHILE},		// while loop one condition
+	{"do",			TOKEN_DO},			// loop do untill with three condition
 	{"return",		TOKEN_RETURN},
 	{"mod",			TOKEN_MOD},			// module
 	{"modEnd",		TOKEN_MODEND},		// module end

@@ -92,7 +92,7 @@ Statement* Parser::parseStatement()
         consume(TOKEN_SEMICOLON, "Expected ';' after declaration");
         return new Declaration(id->VALUE, declType, expr);
     }
-	// While loop
+    // ------------------------------------------------------ While loop ------------------------------------------------
     if (peek()->TYPE == TOKEN_WHILE) {
         advance(); // consume 'while'
 
@@ -118,8 +118,76 @@ Statement* Parser::parseStatement()
         return new WhileStmt(cond, std::move(body));
     }
 
-	// While loop 
-    // i++  =>  i = i + 1;
+	// ------------------------------------------------- DO loop with three conditions ---------------------------------------
+	if (peek()->TYPE == TOKEN_DO) {
+		advance(); // consume 'do'
+		consume(TOKEN_LEFT_PAREN, "Expected '(' after do");
+        
+        Statement* init = nullptr;
+        {
+            // init can be: j; or j = 0; or dec_i j = 0;
+			init = parseStatement();
+        }
+
+		Expression* cond = parseExpression();
+		consume(TOKEN_SEMICOLON, "Expected ';' in do loop after condition");
+		
+			// step can be: j++; or j = j + 1;
+		//Statement*	step = parseStatement();
+		Statement* step = nullptr;
+		//{
+			// step can be: j++; or j = j + 1;
+			//step = parseStatement();
+		//}
+        if (peek()->TYPE == TOKEN_IDENTIFIER &&
+            pos + 1 < tokens.size() &&
+            tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
+        {
+            Token* idTok = advance();   // consume identifier
+            advance();                  // consume '++'
+
+            // Build: j = j + 1;
+            Expression* one = new IntLiteral(1);
+            Expression* leftId = new Identifier(idTok->VALUE);
+            Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
+
+            step = new Assignment(idTok->VALUE, plus);
+        }
+        // Case 2: j = j + 1  (normal assignment step)
+        else if (peek()->TYPE == TOKEN_IDENTIFIER &&
+            pos + 1 < tokens.size() &&
+            tokens[pos + 1]->TYPE == TOKEN_EQUALS)
+        {
+            Token* id = advance(); // ident
+            consume(TOKEN_EQUALS, "Expected '=' in do-loop step");
+            Expression* expr = parseExpression();
+            step = new Assignment(id->VALUE, expr);
+        }
+        else {
+            throw std::runtime_error("Expected step statement (e.g. j++ or j = j + 1) in do-loop");
+        }
+
+
+		consume(TOKEN_RIGHT_PAREN, "Expected ')' after do condition");
+		
+        consume(TOKEN_LEFT_CURL_PAREN, "Expected '{' after do (...)");
+
+		
+        std::vector<Statement*> body;
+		while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN) {
+			Statement* s = parseStatement();
+			if (s) body.push_back(s);
+		}
+		consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after do body");
+				
+        // Optional semicolon after the block
+        match(TOKEN_SEMICOLON);
+
+		return new DoStmt(init, cond, step, std::move(body));
+	} 
+    
+
+	// ------------------------------------------------------------ i++  =>  i = i + 1; While loop ------------------------------------------------  
     if (peek()->TYPE == TOKEN_IDENTIFIER &&
         pos + 1 < tokens.size() &&
         tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
@@ -136,7 +204,7 @@ Statement* Parser::parseStatement()
         return new Assignment(idTok->VALUE, plus);
     }
 
-    // i--  =>  i = i - 1;
+	// -------------------------------------------------------- i--  =>  i = i - 1; While loop ------------------------------------------------
     if (peek()->TYPE == TOKEN_IDENTIFIER &&
         pos + 1 < tokens.size() &&
         tokens[pos + 1]->TYPE == TOKEN_DECREASE)

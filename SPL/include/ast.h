@@ -90,12 +90,23 @@ struct Assignment : Statement {
         : name(n), value(val) {
     }
 };
-
+// ----- Statements ----- IF condition { body } used in the while loop
 struct WhileStmt : Statement {
 	Expression* condition;
 	std::vector<Statement*> body;
 	WhileStmt(Expression* cond, std::vector<Statement*> b)
 		: condition(cond), body(std::move(b)) {
+	}
+};
+
+// do loop with three conditions can be added later
+struct DoStmt : Statement {
+    Statement* init;
+	Expression* condition;
+    Statement* step;
+	std::vector<Statement*> body;
+	DoStmt(Statement* i, Expression* c, Statement* s, std::vector<Statement*> b)
+		: init(i), condition(c), step(s), body(std::move(b)) {
 	}
 };
 

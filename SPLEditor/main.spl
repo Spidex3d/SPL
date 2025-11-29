@@ -14,8 +14,14 @@ mod main();
      pout "x = " + x;
      pout "Age is " + age;
      pout "Hi " + name + " Your age is: " + age;
-dec_i i = 20;
+     pout "Do loop";
+ dec_i j = 0;
+do( j; j isLess 100; j++ ) {
+   pout j;
+};
 
+pout "change to while loop";
+dec_i i = 20;
 while( i isMore 10 ) {
    i--;
    pout i;

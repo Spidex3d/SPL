@@ -20,6 +20,11 @@ start and end syntext
 > more_than
 i 
 
+//do = loop; do untill replace for loop
+do (i = 0; i lessEqual 10; i++) {
+   pout i; // output 10, 20, ..., 100
+};
+
 List & arrays
 vector will be vector as i cant see an alternativee 
 map
