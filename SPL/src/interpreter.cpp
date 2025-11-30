@@ -106,6 +106,42 @@ void Interpreter::execute(Statement* stmt) {
 		else if (var->varType == TOKEN_DEC_F) var->floatValue = static_cast<float>(evalInt(asn->value));
 		return;
 	}
+
+	// ----------------------------------- ifits statement -----------------------------------
+	if (auto* ifs = dynamic_cast<IfItsStmt*>(stmt)) {
+		// 1) main IfIts
+		if (evalInt(ifs->condition) != 0) {
+			for (auto* s : ifs->thenBody) {
+				if (!s) continue;
+				execute(s);
+				if (returning) return; // respect 'return'
+			}
+			return;
+		}
+
+		// 2) ElseIts branches
+		for (auto& br : ifs->elseIfBranches) {
+			if (evalInt(br.cond) != 0) {
+				for (auto* s : br.body) {
+					if (!s) continue;
+					execute(s);
+					if (returning) return;
+				}
+				return;
+			}
+		}
+
+		// 3) Else
+		for (auto* s : ifs->elseBody) {
+			if (!s) continue;
+			execute(s);
+			if (returning) return;
+		}
+
+		return;
+	}
+
+
 	// While loop
 	if (auto* ws = dynamic_cast<WhileStmt*>(stmt)) {
 		while (evalInt(ws->condition) != 0) {

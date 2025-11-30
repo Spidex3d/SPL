@@ -1,0 +1,16 @@
+mod main();
+
+
+   dec_i x = 3;
+
+    IfIts (x isEqual 1)
+        pout "x is 1";
+    ElseIts (x isEqual 2)
+        pout "x is 2";
+    Else
+        pout "x is something else";
+    EndIfIts;
+
+    pout "IfIts, ElseIts, Else, EndIfIts ";
+
+modEnd();

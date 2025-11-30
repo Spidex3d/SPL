@@ -26,7 +26,10 @@ enum type {
 	TOKEN_MOD,     
 	TOKEN_MODEND,  
 	TOKEN_POUT,
-	TOKEN_IF,
+	TOKEN_IFITS,
+	TOKEN_ELSEITS,
+	TOKEN_ELSE,
+	TOKEN_ENDIFITS,
 	TOKEN_WHILE,
 	TOKEN_DO,
 	TOKEN_RETURN,
@@ -52,7 +55,10 @@ struct Token {
 };
 // Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
-	{"if",			TOKEN_IF},
+	{"IfIts",		TOKEN_IFITS},
+	{"ElseIts",	TOKEN_ELSEITS},
+	{"Else",		TOKEN_ELSE},
+	{"EndIfIts",	TOKEN_ENDIFITS},
 	{"while",		TOKEN_WHILE},		// while loop one condition
 	{"do",			TOKEN_DO},			// loop do untill with three condition
 	{"return",		TOKEN_RETURN},

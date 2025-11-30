@@ -110,6 +110,33 @@ struct DoStmt : Statement {
 	}
 };
 
+struct IfItsStmt : Statement {
+    Expression* condition;
+    std::vector<Statement*> thenBody;
+
+    struct ElseIfBranch {
+        Expression* cond;
+		std::vector<Statement*> body;
+    };
+	std::vector<ElseIfBranch> elseIfBranches;
+
+	std::vector<Statement*> elseBody;
+
+    IfItsStmt(Expression* c,
+        std::vector<Statement*> thenB,
+        std::vector<ElseIfBranch> elseIfs,
+        std::vector<Statement*> elseB)
+        : condition(c),
+        thenBody(std::move(thenB)),
+        elseIfBranches(std::move(elseIfs)),
+        elseBody(std::move(elseB)) {
+    }
+    
+};
+
+
+
+
 // ----- Statements ----- POUT pout value;
 struct Pout : Statement {
     Expression* value;

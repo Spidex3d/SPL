@@ -25,6 +25,8 @@ public:
     // Parse literals or identifiers 
     Expression* parsePrimary();
 
+	IfItsStmt* parseIfIts();
+
     // Utility helpers see lexer
     Token* peek();
     Token* peekNext();

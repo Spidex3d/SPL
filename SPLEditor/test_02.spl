@@ -18,12 +18,25 @@ start and end syntext
 
 < less_than
 > more_than
-i 
+if (condition) { ... }  // if statment
+else { ... }            // else statment)
+
+IfIts  (condition)    // replacment for if statment
+   pout "condition is true";
+ElseIts (condition)  // replacment for else if statment
+   pout "condition is true";
+Else   // replacment for else statment
+   pout "condition is true";
+EndIfIts;
 
 //do = loop; do untill replace for loop
 do (i = 0; i lessEqual 10; i++) {
    pout i; // output 10, 20, ..., 100
 };
+
+dec_i = randomizer as Random Integer
+dec_i count randomizer(1, 100) // random integer between 1 and 100
+
 
 List & arrays
 vector will be vector as i cant see an alternativee 

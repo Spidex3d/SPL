@@ -69,6 +69,10 @@ Statement* Parser::parseStatement()
 {
     // Ignore comments
     if (peek()->TYPE == TOKEN_COMMENT) { advance(); return nullptr; }
+    // ----------- IfIts / ElseIts / Else / EndIfIts -----------
+    if (peek()->TYPE == TOKEN_IFITS) {
+        return parseIfIts();
+    }
 
     if (peek()->TYPE == TOKEN_RETURN) { advance();
 	Expression* v = parseExpression();
@@ -92,6 +96,8 @@ Statement* Parser::parseStatement()
         consume(TOKEN_SEMICOLON, "Expected ';' after declaration");
         return new Declaration(id->VALUE, declType, expr);
     }
+    
+
     // ------------------------------------------------------ While loop ------------------------------------------------
     if (peek()->TYPE == TOKEN_WHILE) {
         advance(); // consume 'while'
@@ -185,24 +191,25 @@ Statement* Parser::parseStatement()
 
 		return new DoStmt(init, cond, step, std::move(body));
 	} 
-    
+
+	
 
 	// ------------------------------------------------------------ i++  =>  i = i + 1; While loop ------------------------------------------------  
-    if (peek()->TYPE == TOKEN_IDENTIFIER &&
-        pos + 1 < tokens.size() &&
-        tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
-    {
-        Token* idTok = advance();                    // consume identifier
-        advance();                                   // consume '++'
-        consume(TOKEN_SEMICOLON, "Expected ';' after ++");
+   if (peek()->TYPE == TOKEN_IDENTIFIER &&
+       pos + 1 < tokens.size() &&
+       tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
+   {
+       Token* idTok = advance();                    // consume identifier
+       advance();                                   // consume '++'
+       consume(TOKEN_SEMICOLON, "Expected ';' after ++");
 
-        // build: i = i + 1;
-        Expression* one = new IntLiteral(1);
-        Expression* leftId = new Identifier(idTok->VALUE);
-        Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
+       // build: i = i + 1;
+       Expression* one = new IntLiteral(1);
+       Expression* leftId = new Identifier(idTok->VALUE);
+       Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
 
-        return new Assignment(idTok->VALUE, plus);
-    }
+       return new Assignment(idTok->VALUE, plus);
+   }
 
 	// -------------------------------------------------------- i--  =>  i = i - 1; While loop ------------------------------------------------
     if (peek()->TYPE == TOKEN_IDENTIFIER &&
@@ -285,6 +292,8 @@ Expression* Parser::parsePrimary()
             return new CallExpr(t->VALUE, std::move(args));
         }
 
+        
+
        // return new Identifier(t->VALUE);
         // part of ++
         if (peek()->TYPE == TOKEN_INCREMENT) {
@@ -314,6 +323,69 @@ Expression* Parser::parsePrimary()
     throw std::runtime_error("Unexpected token in expression: '" + t->VALUE + "'");
 
 }
+// ------------------------------------------------------------ IF ELSEIF ELSE ------------------------------------------------
+
+IfItsStmt* Parser::parseIfIts() {
+        consume(TOKEN_IFITS, "Expected 'IfIts'");
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after IfIts");
+        Expression* cond = parseExpression();
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after IfIts condition");
+
+        // BODY for the first IfIts branch: runs until ElseIts / Else / EndIfIts
+        std::vector<Statement*> thenBody;
+        while (peek()->TYPE != TOKEN_ELSEITS &&
+            peek()->TYPE != TOKEN_ELSE &&
+            peek()->TYPE != TOKEN_ENDIFITS &&
+            peek()->TYPE != TOKEN_EOF)
+        {
+            Statement* s = parseStatement();
+            if (s) thenBody.push_back(s);
+        }
+
+        // Parse zero or more ElseIts branches
+        std::vector<IfItsStmt::ElseIfBranch> elseIfs;
+        while (peek()->TYPE == TOKEN_ELSEITS) {
+            advance(); // consume 'ElseIts'
+            consume(TOKEN_LEFT_PAREN, "Expected '(' after ElseIts");
+            Expression* econd = parseExpression();
+            consume(TOKEN_RIGHT_PAREN, "Expected ')' after ElseIts condition");
+
+            std::vector<Statement*> ebody;
+            while (peek()->TYPE != TOKEN_ELSEITS &&
+                peek()->TYPE != TOKEN_ELSE &&
+                peek()->TYPE != TOKEN_ENDIFITS &&
+                peek()->TYPE != TOKEN_EOF)
+            {
+                Statement* s = parseStatement();
+                if (s) ebody.push_back(s);
+            }
+
+            elseIfs.push_back(IfItsStmt::ElseIfBranch{ econd, std::move(ebody) });
+        }
+
+        // Optional Else
+        std::vector<Statement*> elseBody;
+        if (peek()->TYPE == TOKEN_ELSE) {
+            advance(); // consume 'Else'
+
+            while (peek()->TYPE != TOKEN_ENDIFITS &&
+                peek()->TYPE != TOKEN_EOF)
+            {
+                Statement* s = parseStatement();
+                if (s) elseBody.push_back(s);
+            }
+        }
+
+        // EndIfIts;
+        consume(TOKEN_ENDIFITS, "Expected 'EndIfIts' to close IfIts");
+        consume(TOKEN_SEMICOLON, "Expected ';' after EndIfIts");
+
+        return new IfItsStmt(cond, std::move(thenBody), std::move(elseIfs), std::move(elseBody));
+}
+
+
+
+
 
 Token* Parser::peek()
 {
