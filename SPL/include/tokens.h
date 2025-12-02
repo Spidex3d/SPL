@@ -41,10 +41,11 @@ enum type {
 	TOKEN_ISEQUAL,
 	TOKEN_ISNOTEQUAL,
 	// declare dec_function token
-	// dec_int, dec_string, dec_float
-	TOKEN_DEC_I,
+	// dec_int, dec_string, dec_float boolean
+	TOKEN_DEC_I, // declare integer
 	TOKEN_DEC_S,
 	TOKEN_DEC_F,
+	TOKEN_DEC_B, // declare boolean
 	// End of file token to stop memory leaks
 	TOKEN_EOF
 };
@@ -56,7 +57,7 @@ struct Token {
 // Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"IfIts",		TOKEN_IFITS},
-	{"ElseIts",	TOKEN_ELSEITS},
+	{"ElseIts",		TOKEN_ELSEITS},
 	{"Else",		TOKEN_ELSE},
 	{"EndIfIts",	TOKEN_ENDIFITS},
 	{"while",		TOKEN_WHILE},		// while loop one condition
@@ -73,6 +74,7 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"pout",		TOKEN_POUT},
 	{"dec_i",		TOKEN_DEC_I},
 	{"dec_s",		TOKEN_DEC_S},
-	{"dec_f",		TOKEN_DEC_F}
+	{"dec_f",		TOKEN_DEC_F},
+	{"dec_b",		TOKEN_DEC_B} // declare boolean
 };
 

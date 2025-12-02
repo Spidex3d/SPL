@@ -1,14 +1,15 @@
 mod main();
 
 
-   dec_i x = 3;
+   dec_i x = 5;
+   dec_b con = 0;
 
-    IfIts (x isEqual 1)
-        pout "x is 1";
-    ElseIts (x isEqual 2)
-        pout "x is 2";
+    IfIts (con isEqual 1)
+        pout "con is TRUE";
+    ElseIts (con isEqual 0)
+        pout "con is FALSE";
     Else
-        pout "x is something else";
+        pout "con is something else";
     EndIfIts;
 
     pout "IfIts, ElseIts, Else, EndIfIts ";

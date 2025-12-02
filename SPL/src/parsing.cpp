@@ -83,7 +83,8 @@ Statement* Parser::parseStatement()
     // Variable declaration
     if (peek()->TYPE == TOKEN_DEC_I ||
         peek()->TYPE == TOKEN_DEC_S ||
-        peek()->TYPE == TOKEN_DEC_F) {
+        peek()->TYPE == TOKEN_DEC_F ||
+        peek()->TYPE == TOKEN_DEC_B) {
 
         type declType = advance()->TYPE; // consume dec_i/dec_s/dec_f
         Token* id = consume(TOKEN_IDENTIFIER, "Expected variable name");

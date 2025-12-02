@@ -44,6 +44,8 @@ Value Interpreter::callModule(const std::string& name, const std::vector<Value>&
 		Var v{};
 		if (args[i].kind == Value::VInt) { v.varType = TOKEN_DEC_I; v.intValue = args[i].i; }
 		else if (args[i].kind == Value::VString) { v.varType = TOKEN_DEC_S; v.stringValue = args[i].s; }
+		//else if (args[i].kind == Value::VInt) { v.varType = TOKEN_DEC_B; v.intValue = args[i].i ? 1 : 0; }
+		//else if (args[i].kind == Value::VBool) { v.varType = TOKEN_DEC_B; v.intValue = args[i].i ? true : false; }
 		locals[m->params[i]] = v;
 	}
 
@@ -93,6 +95,8 @@ void Interpreter::execute(Statement* stmt) {
 			if (v.varType == TOKEN_DEC_I) v.intValue = evalInt(decl->value);
 			else if (v.varType == TOKEN_DEC_S) v.stringValue = evalString(decl->value);
 			else if (v.varType == TOKEN_DEC_F) v.floatValue = static_cast<float>(evalInt(decl->value));
+			else if (v.varType == TOKEN_DEC_B) v.intValue = evalInt(decl->value); // boolean as int
+			//else if (v.varType == TOKEN_DEC_B) v.intValue = evalBool(decl->value) ? true : false; // boolean as int
 		}
 		if (scopes.empty()) variables[decl->name] = v; else scopes.back()[decl->name] = v;
 		return;
@@ -104,6 +108,8 @@ void Interpreter::execute(Statement* stmt) {
 		if (var->varType == TOKEN_DEC_I) var->intValue = evalInt(asn->value);
 		else if (var->varType == TOKEN_DEC_S) var->stringValue = evalString(asn->value);
 		else if (var->varType == TOKEN_DEC_F) var->floatValue = static_cast<float>(evalInt(asn->value));
+		else if (var->varType == TOKEN_DEC_B) var->intValue = evalInt(asn->value); // boolean as int
+		//else if (var->varType == TOKEN_DEC_B) var->intValue = evalBool(asn->value) ? true : false; // boolean as int
 		return;
 	}
 
@@ -213,8 +219,11 @@ int Interpreter::evalInt(Expression* expr) {
 	if (auto* id = dynamic_cast<Identifier*>(expr)) {
 		Var* v = lookupVar(id->name);
 		if (!v) throw std::runtime_error("Undefined variable: " + id->name);
-		if (v->varType != TOKEN_DEC_I) throw std::runtime_error("Type error: '" + id->name + "' is not int");
-		return v->intValue;
+
+		if (v->varType == TOKEN_DEC_I || v->varType == TOKEN_DEC_B) {
+			return v->intValue;
+		}
+		throw std::runtime_error("Type error: '" + id->name + "' is NOT int");
 	}
 	
 	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
@@ -261,6 +270,36 @@ float Interpreter::evalFloat(Expression* expr) {
 	if (auto* id = dynamic_cast<Identifier*>(expr)) return variables[id->name].floatValue;
 	throw std::runtime_error("Invalid float expression");
 }
+
+//bool Interpreter::evalBool(Expression* expr)
+//{
+//	if (auto* lit = dynamic_cast<IntLiteral*>(expr)) {
+//		return lit->value != 0;
+//	}
+//	if (auto* call = dynamic_cast<Identifier*>(expr)) {
+//		
+//		Var* v = lookupVar(call->name);
+//		if (!v) throw std::runtime_error("Undefined variable: " + call->name);
+//		if (v->varType != TOKEN_DEC_B) throw std::runtime_error("Type error: '" + call->name + "' is not boolean");
+//		return v->intValue != 0;
+//
+//	}
+//
+//	if (auto* call = dynamic_cast<CallExpr*>(expr)) {
+//		std::vector<Value> args;
+//		args.reserve(call->args.size());
+//		for (auto* a : call->args) {
+//			if (isStringExpr(a)) args.push_back(Value::Str(evalString(a)));
+//			else                 args.push_back(Value::Bool(evalInt(a)));
+//		}
+//		Value v = callModule(call->moduleName, args);
+//		if (v.kind != Value::VBool) throw std::runtime_error("Type error: expected int return from '" + call->moduleName + "'");
+//		return v.i;
+//		throw std::runtime_error("Invalid boolean expression");
+//	}
+//
+//	
+//}
 
 
 std::string Interpreter::evalString(Expression* expr) {

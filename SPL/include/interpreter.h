@@ -7,14 +7,17 @@ struct Var {
 	std::string stringValue; // for string variables
 	int intValue = 0;	   // for int variables
 	float floatValue = 0.0f;	 // for float variables
+	//bool boolValue = false;   // for boolean variables
 };
 
 struct Value {
-	enum { VVoid, VInt, VString } kind = VVoid;
+	//enum { VVoid, VInt, VString, VBool } kind = VVoid;
+	enum { VVoid, VInt, VString, } kind = VVoid;
 	int i = 0;
 	std::string s;
 	static Value Int(int v) { Value x; x.kind = VInt; x.i = v; return x; }
 	static Value Str(std::string v) { Value x; x.kind = VString; x.s = std::move(v); return x; }
+	//static Value Bool(bool v) { Value x; x.kind = VBool; x.i = v ? 1 : 0; return x; }
 	static Value Void() { return Value{}; }
 };
 
@@ -23,7 +26,6 @@ class Interpreter {
 
 public:
 	Interpreter(); // constructor
-
 	
 
 	void execute(Statement* stmt);
@@ -58,6 +60,8 @@ private:
 	std::string evalString(Expression* expr);
 	// evaluate a Float expression from the AST
 	float evalFloat(Expression* expr);
+	// evaluate a boolean expression from the AST
+	 bool evalBool(Expression* expr);
 	// determine if an expression evaluates to a string
 	bool isStringExpr(Expression* expr);
 	
