@@ -95,8 +95,8 @@ void Interpreter::execute(Statement* stmt) {
 			if (v.varType == TOKEN_DEC_I) v.intValue = evalInt(decl->value);
 			else if (v.varType == TOKEN_DEC_S) v.stringValue = evalString(decl->value);
 			else if (v.varType == TOKEN_DEC_F) v.floatValue = static_cast<float>(evalInt(decl->value));
-			else if (v.varType == TOKEN_DEC_B) v.intValue = evalInt(decl->value); // boolean as int
-			//else if (v.varType == TOKEN_DEC_B) v.intValue = evalBool(decl->value) ? true : false; // boolean as int
+			//else if (v.varType == TOKEN_DEC_B) v.intValue = evalInt(decl->value); // boolean as int
+			else if (v.varType == TOKEN_DEC_B) v.intValue = evalBool(decl->value) ? 1 : 0; // boolean as int
 		}
 		if (scopes.empty()) variables[decl->name] = v; else scopes.back()[decl->name] = v;
 		return;
@@ -108,15 +108,16 @@ void Interpreter::execute(Statement* stmt) {
 		if (var->varType == TOKEN_DEC_I) var->intValue = evalInt(asn->value);
 		else if (var->varType == TOKEN_DEC_S) var->stringValue = evalString(asn->value);
 		else if (var->varType == TOKEN_DEC_F) var->floatValue = static_cast<float>(evalInt(asn->value));
-		else if (var->varType == TOKEN_DEC_B) var->intValue = evalInt(asn->value); // boolean as int
-		//else if (var->varType == TOKEN_DEC_B) var->intValue = evalBool(asn->value) ? true : false; // boolean as int
+		//else if (var->varType == TOKEN_DEC_B) var->intValue = evalInt(asn->value); // boolean as int
+		else if (var->varType == TOKEN_DEC_B) var->intValue = evalBool(asn->value) ? 1 : 0; // boolean as int
 		return;
 	}
 
 	// ----------------------------------- ifits statement -----------------------------------
 	if (auto* ifs = dynamic_cast<IfItsStmt*>(stmt)) {
 		// 1) main IfIts
-		if (evalInt(ifs->condition) != 0) {
+		//if (evalInt(ifs->condition) != 0) {
+		if (evalBool(ifs->condition) != 0) {
 			for (auto* s : ifs->thenBody) {
 				if (!s) continue;
 				execute(s);
@@ -127,7 +128,8 @@ void Interpreter::execute(Statement* stmt) {
 
 		// 2) ElseIts branches
 		for (auto& br : ifs->elseIfBranches) {
-			if (evalInt(br.cond) != 0) {
+			//if (evalInt(br.cond) != 0) {
+			if (evalBool(br.cond) != 0) {
 				for (auto* s : br.body) {
 					if (!s) continue;
 					execute(s);
@@ -150,7 +152,8 @@ void Interpreter::execute(Statement* stmt) {
 
 	// While loop
 	if (auto* ws = dynamic_cast<WhileStmt*>(stmt)) {
-		while (evalInt(ws->condition) != 0) {
+		//while (evalInt(ws->condition) != 0) {
+		while (evalBool(ws->condition) != 0) {
 
 			for (auto* s : ws->body) {
 				if (!s) continue;
@@ -170,7 +173,8 @@ void Interpreter::execute(Statement* stmt) {
 			execute(dl->init);
 
 		// run loop
-		while (evalInt(dl->condition) != 0) {
+		//while (evalInt(dl->condition) != 0) {
+		while (evalBool(dl->condition) != 0) {
 
 			for (auto* s : dl->body) {
 				if (!s) continue;
@@ -190,8 +194,15 @@ void Interpreter::execute(Statement* stmt) {
 	// Pout statement for printing to console
 	if (auto* pout = dynamic_cast<Pout*>(stmt)) {
 		Expression* e = pout->value;
-		if (isStringExpr(e)) std::cout << evalString(e) << std::endl;
-		else                 std::cout << evalInt(e) << std::endl;
+		if (isStringExpr(e)) {
+			std::cout << evalString(e) << std::endl;
+		}
+		else if (isBoolExpr(e)) {
+			std::cout << (evalBool(e) ? "true" : "false") << std::endl;
+		}
+		else {
+			std::cout << evalInt(e) << std::endl;
+		}
 		return;
 	}
 
@@ -271,35 +282,99 @@ float Interpreter::evalFloat(Expression* expr) {
 	throw std::runtime_error("Invalid float expression");
 }
 
-//bool Interpreter::evalBool(Expression* expr)
-//{
-//	if (auto* lit = dynamic_cast<IntLiteral*>(expr)) {
-//		return lit->value != 0;
-//	}
-//	if (auto* call = dynamic_cast<Identifier*>(expr)) {
-//		
-//		Var* v = lookupVar(call->name);
-//		if (!v) throw std::runtime_error("Undefined variable: " + call->name);
-//		if (v->varType != TOKEN_DEC_B) throw std::runtime_error("Type error: '" + call->name + "' is not boolean");
-//		return v->intValue != 0;
-//
-//	}
-//
-//	if (auto* call = dynamic_cast<CallExpr*>(expr)) {
-//		std::vector<Value> args;
-//		args.reserve(call->args.size());
-//		for (auto* a : call->args) {
-//			if (isStringExpr(a)) args.push_back(Value::Str(evalString(a)));
-//			else                 args.push_back(Value::Bool(evalInt(a)));
-//		}
-//		Value v = callModule(call->moduleName, args);
-//		if (v.kind != Value::VBool) throw std::runtime_error("Type error: expected int return from '" + call->moduleName + "'");
-//		return v.i;
-//		throw std::runtime_error("Invalid boolean expression");
-//	}
-//
-//	
-//}
+bool Interpreter::evalBool(Expression* expr)
+{
+	// 1) Literal int or arithmetic / comparison expression
+	//    (like:  1,  i isLess 10,  i + 5, etc.)
+	if (dynamic_cast<IntLiteral*>(expr) ||
+		dynamic_cast<BinaryExpr*>(expr))
+	{
+		// comparisons already return 0/1 in evalInt
+		return evalInt(expr) != 0;
+	}
+
+	// 2) Identifier: dec_b or dec_i variable
+	if (auto* id = dynamic_cast<Identifier*>(expr)) {
+		Var* v = lookupVar(id->name);
+		if (!v)
+			throw std::runtime_error("Undefined variable: " + id->name);
+
+		if (v->varType == TOKEN_DEC_B || v->varType == TOKEN_DEC_I) {
+			// interpret numeric as boolean: 0 = false, non-zero = true
+			return v->intValue != 0;
+		}
+		//if (v->varType == TOKEN_DEC_S) {
+		//	throw std::runtime_error("Type error: '" + id->name + "' is a string, not boolean");
+		//}
+		//// if you add TOKEN_DEC_B:
+		//if (v->varType == TOKEN_DEC_B) {
+		//	// still stored as int 0/1 for now
+		//	return v->intValue != 0;
+		//}
+
+		throw std::runtime_error("Type error: '" + id->name + "' is not a boolean-compatible type");
+	}
+
+	// 3) Call expression: boolean from a module call
+	if (auto* call = dynamic_cast<CallExpr*>(expr)) {
+		std::vector<Value> args;
+		args.reserve(call->args.size());
+		for (auto* a : call->args) {
+			if (isStringExpr(a)) args.push_back(Value::Str(evalString(a)));
+			else                 args.push_back(Value::Int(evalInt(a)));
+		}
+
+		Value v = callModule(call->moduleName, args);
+
+		// For now we treat "truthy" as non-zero int
+		if (v.kind == Value::VInt)  return v.i != 0;
+		if (v.kind == Value::VString)
+			throw std::runtime_error("Type error: string return used as boolean from '" + call->moduleName + "'");
+
+		// If you later add VBool, you can do:
+		// if (v.kind == Value::VBool) return v.b;
+
+		throw std::runtime_error("Type error: non-boolean compatible return from '" + call->moduleName + "'");
+	}
+
+	// 4) String literal: not allowed in boolean context (for now)
+	if (dynamic_cast<StringLiteral*>(expr)) {
+		throw std::runtime_error("Type error: string used in boolean context");
+	}
+
+	// 5) Anything else is invalid
+	throw std::runtime_error("Invalid boolean expression");
+
+	
+}
+
+bool Interpreter::isBoolExpr(Expression* expr)
+{
+	// 1) Boolean variable: dec_b flag;
+	if (auto* id = dynamic_cast<Identifier*>(expr)) {
+		Var* v = lookupVar(id->name);
+		if (!v) return false;
+		return v->varType == TOKEN_DEC_B;
+	}
+
+	// 2) Comparison operators: x isEqual 10, x isLess 5, etc.
+	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
+		switch (bin->op) {
+		case TOKEN_ISEQUAL:
+		case TOKEN_ISNOTEQUAL:
+		case TOKEN_ISLESS:
+		case TOKEN_ISMORE:
+			// later: add <= >= tokens here too if you define them
+			return true;
+		default:
+			break;
+		}
+	}
+
+	// 3) (optional) later: bool literals or module calls that return bool
+
+	return false;
+}
 
 
 std::string Interpreter::evalString(Expression* expr) {
@@ -310,6 +385,8 @@ std::string Interpreter::evalString(Expression* expr) {
 		Var* v = lookupVar(id->name);
 		if (!v)	throw std::runtime_error("Undefined variable: " + id->name);
 		if (v->varType == TOKEN_DEC_S) return v->stringValue;
+		if (v->varType == TOKEN_DEC_B) return v->intValue ? "true" : "false"; // boolean as string
+		
 		if (v->varType == TOKEN_DEC_I) return std::to_string(v->intValue);
 		// simple fallback for future float
 		if (v->varType == TOKEN_DEC_F) return std::to_string(v->floatValue);
@@ -336,6 +413,7 @@ std::string Interpreter::evalString(Expression* expr) {
 		Value v = callModule(call->moduleName, args);
 		if (v.kind == Value::VString) return v.s;
 		if (v.kind == Value::VInt)    return std::to_string(v.i);
+		//if (v.kind == Value::VBool)   return v.b ? "true" : "false";
 		return "";
 	}
 	throw std::runtime_error("Invalid string expression");

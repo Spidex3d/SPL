@@ -40,6 +40,9 @@ enum type {
 	TOKEN_ISMORE,
 	TOKEN_ISEQUAL,
 	TOKEN_ISNOTEQUAL,
+	// boolean literals
+	TOKEN_TRUE,
+	TOKEN_FALSE,
 	// declare dec_function token
 	// dec_int, dec_string, dec_float boolean
 	TOKEN_DEC_I, // declare integer
@@ -67,14 +70,16 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"modEnd",		TOKEN_MODEND},		// module end
 	{"++",			TOKEN_INCREMENT},	// ++
 	{"--",			TOKEN_DECREASE},	// --
-	{"isLess",		TOKEN_ISLESS},
-	{"isMore",		TOKEN_ISMORE},
+	{"isLess",		TOKEN_ISLESS},		// less than
+	{"isMore",		TOKEN_ISMORE},		// more than
 	{"isEqual",		TOKEN_ISEQUAL},
 	{"isNotEqual",	TOKEN_ISNOTEQUAL},
 	{"pout",		TOKEN_POUT},
 	{"dec_i",		TOKEN_DEC_I},
 	{"dec_s",		TOKEN_DEC_S},
 	{"dec_f",		TOKEN_DEC_F},
-	{"dec_b",		TOKEN_DEC_B} // declare boolean
+	{"true",		TOKEN_TRUE},	// boolean literals
+	{"false",		TOKEN_FALSE},	// boolean literals
+	{"dec_b",		TOKEN_DEC_B}	// declare boolean
 };
 

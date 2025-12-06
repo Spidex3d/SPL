@@ -282,6 +282,11 @@ Expression* Parser::parsePrimary()
     if (t->TYPE == TOKEN_INT)  return new IntLiteral(std::stoi(t->VALUE));
     
     if (t->TYPE == TOKEN_STRING) return new StringLiteral(t->VALUE);
+
+    if (t->TYPE == TOKEN_TRUE) return new IntLiteral(1);
+    
+    if (t->TYPE == TOKEN_FALSE) return new IntLiteral(0);
+    
     
     if (t->TYPE == TOKEN_IDENTIFIER) { 
         if (peek()->TYPE == TOKEN_LEFT_PAREN) {

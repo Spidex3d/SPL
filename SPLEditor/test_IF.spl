@@ -2,16 +2,16 @@ mod main();
 
 
    dec_i x = 5;
-   dec_b con = 0;
+   dec_b flag = false;
 
-    IfIts (con isEqual 1)
-        pout "con is TRUE";
-    ElseIts (con isEqual 0)
-        pout "con is FALSE";
+    IfIts (flag)
+        pout "flag is TRUE";
+    ElseIts (flag isEqual 0)
+        pout "flag is FALSE";
     Else
-        pout "con is something else";
+        pout "flag is something else";
     EndIfIts;
 
-    pout "IfIts, ElseIts, Else, EndIfIts ";
-
+    pout "Flag is " + flag;
+    pout flag;
 modEnd();

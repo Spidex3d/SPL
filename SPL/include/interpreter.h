@@ -61,7 +61,8 @@ private:
 	// evaluate a Float expression from the AST
 	float evalFloat(Expression* expr);
 	// evaluate a boolean expression from the AST
-	 bool evalBool(Expression* expr);
+	bool evalBool(Expression* expr);
+	bool isBoolExpr(Expression* expr);
 	// determine if an expression evaluates to a string
 	bool isStringExpr(Expression* expr);
 	
