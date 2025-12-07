@@ -119,7 +119,21 @@ std::vector<Token*> Lexer::tokenize()
 					continue;
 				}
 
+				// logical AND &&
+				if (current == '&' && peek(1) == '&') {
+					advance(); advance();
+					tokens.push_back(new Token{ TOKEN_AND, "&&" });
+					continue;
+				}
 
+				// logical OR ||
+				if (current == '|' && peek(1) == '|') {
+					advance(); advance();
+					tokens.push_back(new Token{ TOKEN_OR, "||" });
+					continue;
+				}
+
+				
 			// Handle single-character tokens
 				switch (current) {
 
@@ -168,6 +182,11 @@ std::vector<Token*> Lexer::tokenize()
 					break;
 				case '-':
 					tokenID = new Token{ TOKEN_MINUS, "-" };
+					tokens.push_back(tokenID);
+					advance();
+					break;
+				case '!':
+					tokenID = new Token{ TOKEN_NOT, "!" };
 					tokens.push_back(tokenID);
 					advance();
 					break;

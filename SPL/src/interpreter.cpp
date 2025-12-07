@@ -284,38 +284,133 @@ float Interpreter::evalFloat(Expression* expr) {
 
 bool Interpreter::evalBool(Expression* expr)
 {
-	// 1) Literal int or arithmetic / comparison expression
-	//    (like:  1,  i isLess 10,  i + 5, etc.)
-	if (dynamic_cast<IntLiteral*>(expr) ||
-		dynamic_cast<BinaryExpr*>(expr))
-	{
-		// comparisons already return 0/1 in evalInt
-		return evalInt(expr) != 0;
+	//// 0) Unary ! (NOT)
+	//if (auto* u = dynamic_cast<UnaryExpr*>(expr)) {
+	//	if (u->op == TOKEN_NOT) {
+	//		return !evalBool(u->expr);
+	//	}
+	//}
+
+	//// 1) Logical binary operators: && and ||
+	//if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
+	//	switch (bin->op) {
+	//	case TOKEN_AND:
+	//		// short-circuit
+	//		return evalBool(bin->left) && evalBool(bin->right);
+	//	case TOKEN_OR:
+	//		// short-circuit
+	//		return evalBool(bin->left) || evalBool(bin->right);
+	//	default:
+	//		// not a logical operator (+=, comparisons, +, -, etc.)
+	//		// fall through to the generic numeric-as-bool rule below
+	//		break;
+	//	}
+	//}
+
+	//// 2) Literal int OR non-boolean BinaryExpr (like comparisons)
+	//if (dynamic_cast<IntLiteral*>(expr) ||
+	//	dynamic_cast<BinaryExpr*>(expr))
+	//{
+	//	// comparisons already return 0/1 in evalInt
+	//	return evalInt(expr) != 0;
+	//}
+
+	//// 3) Identifier: dec_b or dec_i variable
+	//if (auto* id = dynamic_cast<Identifier*>(expr)) {
+	//	Var* v = lookupVar(id->name);
+	//	if (!v)
+	//		throw std::runtime_error("Undefined variable: " + id->name);
+
+	//	if (v->varType == TOKEN_DEC_B || v->varType == TOKEN_DEC_I) {
+	//		return v->intValue != 0;
+	//	}
+
+	//	throw std::runtime_error("Type error: '" + id->name + "' is not a boolean-compatible type");
+	//}
+
+	//// 4) Call expression: boolean from a module call
+	//if (auto* call = dynamic_cast<CallExpr*>(expr)) {
+	//	std::vector<Value> args;
+	//	args.reserve(call->args.size());
+	//	for (auto* a : call->args) {
+	//		if (isStringExpr(a)) args.push_back(Value::Str(evalString(a)));
+	//		else                 args.push_back(Value::Int(evalInt(a)));
+	//	}
+
+	//	Value v = callModule(call->moduleName, args);
+
+	//	if (v.kind == Value::VInt)  return v.i != 0;
+	//	if (v.kind == Value::VString)
+	//		throw std::runtime_error("Type error: string return used as boolean from '" + call->moduleName + "'");
+
+	//	// later: if (v.kind == Value::VBool) return v.b;
+
+	//	throw std::runtime_error("Type error: non-boolean compatible return from '" + call->moduleName + "'");
+	//}
+
+	//// 5) String literal: not allowed in boolean context (for now)
+	//if (dynamic_cast<StringLiteral*>(expr)) {
+	//	throw std::runtime_error("Type error: string used in boolean context");
+	//}
+
+	//// 6) Anything else is invalid
+	//throw std::runtime_error("Invalid boolean expression");
+	//#######################################################################
+	
+	// --- 0) Logical NOT: !expr ---
+	if (auto* u = dynamic_cast<UnaryExpr*>(expr)) {
+		if (u->op == TOKEN_NOT) {
+			return !evalBool(u->expr);
+		}
+		// if you ever add other unary ops, handle them here
 	}
 
-	// 2) Identifier: dec_b or dec_i variable
+	// --- 1) Binary logical / comparison / arithmetic ---
+	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
+		switch (bin->op) {
+			// logical AND: left && right  (short-circuit)
+		case TOKEN_AND:
+			return evalBool(bin->left) && evalBool(bin->right);
+
+			// logical OR: left || right   (short-circuit)
+		case TOKEN_OR:
+			return evalBool(bin->left) || evalBool(bin->right);
+
+			// comparison operators: already implemented in evalInt as 0/1
+		case TOKEN_ISEQUAL:
+		case TOKEN_ISNOTEQUAL:
+		case TOKEN_ISLESS:
+		case TOKEN_ISMORE:
+		
+			// later: add <= >= here too if you define them
+			return evalInt(expr) != 0;
+
+			// fallback: arithmetic / other ops used in boolean context
+		default:
+			// e.g. IfIts (x + 1) → treat non-zero as true
+			return evalInt(expr) != 0;
+		}
+	}
+
+	// --- 2) Literal ints: 0 = false, non-zero = true ---
+	if (auto* lit = dynamic_cast<IntLiteral*>(expr)) {
+		return lit->value != 0;
+	}
+
+	// --- 3) Identifier: dec_b or dec_i variable ---
 	if (auto* id = dynamic_cast<Identifier*>(expr)) {
 		Var* v = lookupVar(id->name);
 		if (!v)
 			throw std::runtime_error("Undefined variable: " + id->name);
 
 		if (v->varType == TOKEN_DEC_B || v->varType == TOKEN_DEC_I) {
-			// interpret numeric as boolean: 0 = false, non-zero = true
 			return v->intValue != 0;
 		}
-		//if (v->varType == TOKEN_DEC_S) {
-		//	throw std::runtime_error("Type error: '" + id->name + "' is a string, not boolean");
-		//}
-		//// if you add TOKEN_DEC_B:
-		//if (v->varType == TOKEN_DEC_B) {
-		//	// still stored as int 0/1 for now
-		//	return v->intValue != 0;
-		//}
 
 		throw std::runtime_error("Type error: '" + id->name + "' is not a boolean-compatible type");
 	}
 
-	// 3) Call expression: boolean from a module call
+	// --- 4) Call expression: boolean from a module call ---
 	if (auto* call = dynamic_cast<CallExpr*>(expr)) {
 		std::vector<Value> args;
 		args.reserve(call->args.size());
@@ -326,8 +421,8 @@ bool Interpreter::evalBool(Expression* expr)
 
 		Value v = callModule(call->moduleName, args);
 
-		// For now we treat "truthy" as non-zero int
-		if (v.kind == Value::VInt)  return v.i != 0;
+		// For now we treat ints as booleans (0 = false, non-zero = true)
+		if (v.kind == Value::VInt)    return v.i != 0;
 		if (v.kind == Value::VString)
 			throw std::runtime_error("Type error: string return used as boolean from '" + call->moduleName + "'");
 
@@ -337,43 +432,92 @@ bool Interpreter::evalBool(Expression* expr)
 		throw std::runtime_error("Type error: non-boolean compatible return from '" + call->moduleName + "'");
 	}
 
-	// 4) String literal: not allowed in boolean context (for now)
+	// --- 5) String literal: not allowed in boolean context (for now) ---
 	if (dynamic_cast<StringLiteral*>(expr)) {
 		throw std::runtime_error("Type error: string used in boolean context");
 	}
 
-	// 5) Anything else is invalid
+	// --- 6) Anything else is invalid ---
 	throw std::runtime_error("Invalid boolean expression");
+
+	
 
 	
 }
 
 bool Interpreter::isBoolExpr(Expression* expr)
 {
-	// 1) Boolean variable: dec_b flag;
 	if (auto* id = dynamic_cast<Identifier*>(expr)) {
 		Var* v = lookupVar(id->name);
 		if (!v) return false;
 		return v->varType == TOKEN_DEC_B;
 	}
 
-	// 2) Comparison operators: x isEqual 10, x isLess 5, etc.
+	if (auto* un = dynamic_cast<UnaryExpr*>(expr)) {
+		if (un->op == TOKEN_NOT) return true;
+	}
+
 	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
 		switch (bin->op) {
 		case TOKEN_ISEQUAL:
 		case TOKEN_ISNOTEQUAL:
 		case TOKEN_ISLESS:
 		case TOKEN_ISMORE:
-			// later: add <= >= tokens here too if you define them
+		case TOKEN_AND:      // <-- add
+		case TOKEN_OR:       // <-- add
 			return true;
 		default:
 			break;
 		}
 	}
 
-	// 3) (optional) later: bool literals or module calls that return bool
+	// (optional) Unary NOT could be considered boolean too:
+	if (auto* u = dynamic_cast<UnaryExpr*>(expr)) {
+		if (u->op == TOKEN_NOT) return true;
+	}
 
 	return false;
+
+	//// 1) Boolean variable: dec_b flag;
+	//if (auto* id = dynamic_cast<Identifier*>(expr)) {
+	//	Var* v = lookupVar(id->name);
+	//	if (!v) return false;
+	//	return v->varType == TOKEN_DEC_B;
+	//}
+
+	//// 2) Comparison operators: x isEqual 10, x isLess 5, etc.
+	//if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
+
+	//	// logical AND
+	//	if (bin->op == TOKEN_AND) {
+	//		// short-circuit
+	//		if (!evalBool(bin->left)) return false;
+	//		return evalBool(bin->right);
+	//	}
+
+	//	// logical OR
+	//	if (bin->op == TOKEN_OR) {
+	//		// short-circuit
+	//		if (evalBool(bin->left)) return true;
+	//		return evalBool(bin->right);
+	//	}
+
+	//	switch (bin->op) {
+	//	case TOKEN_ISEQUAL:
+	//	case TOKEN_ISNOTEQUAL:
+	//	case TOKEN_ISLESS:
+	//	case TOKEN_ISMORE:
+	//		// later: add <= >= tokens here too if you define them
+	//		return true;
+	//	default:
+	//		break;
+	//	}
+	//	return evalInt(expr) != 0;
+	//}
+
+	//// 3) (optional) later: bool literals or module calls that return bool
+
+	//return false;
 }
 
 
@@ -448,3 +592,61 @@ bool Interpreter::isStringExpr(Expression* expr)
 }
 
 
+//if (auto* u = dynamic_cast<UnaryExpr*>(expr)) {
+	//	if (u->op == TOKEN_NOT) {
+	//		return !evalBool(u->expr);
+	//	}
+	//}
+	//// 1) Literal int or arithmetic / comparison expression
+	////    (like:  1,  i isLess 10,  i + 5, etc.)
+	//if (dynamic_cast<IntLiteral*>(expr) ||
+	//	dynamic_cast<BinaryExpr*>(expr))
+	//{
+	//	// comparisons already return 0/1 in evalInt
+	//	return evalInt(expr) != 0;
+	//}
+
+	//// 2) Identifier: dec_b or dec_i variable
+	//if (auto* id = dynamic_cast<Identifier*>(expr)) {
+	//	Var* v = lookupVar(id->name);
+	//	if (!v)
+	//		throw std::runtime_error("Undefined variable: " + id->name);
+
+	//	if (v->varType == TOKEN_DEC_B || v->varType == TOKEN_DEC_I) {
+	//		// interpret numeric as boolean: 0 = false, non-zero = true
+	//		return v->intValue != 0;
+	//	}
+	//	
+
+	//	throw std::runtime_error("Type error: '" + id->name + "' is not a boolean-compatible type");
+	//}
+
+	//// 3) Call expression: boolean from a module call
+	//if (auto* call = dynamic_cast<CallExpr*>(expr)) {
+	//	std::vector<Value> args;
+	//	args.reserve(call->args.size());
+	//	for (auto* a : call->args) {
+	//		if (isStringExpr(a)) args.push_back(Value::Str(evalString(a)));
+	//		else                 args.push_back(Value::Int(evalInt(a)));
+	//	}
+
+	//	Value v = callModule(call->moduleName, args);
+
+	//	// For now we treat "truthy" as non-zero int
+	//	if (v.kind == Value::VInt)  return v.i != 0;
+	//	if (v.kind == Value::VString)
+	//		throw std::runtime_error("Type error: string return used as boolean from '" + call->moduleName + "'");
+
+	//	// If you later add VBool, you can do:
+	//	// if (v.kind == Value::VBool) return v.b;
+
+	//	throw std::runtime_error("Type error: non-boolean compatible return from '" + call->moduleName + "'");
+	//}
+
+	//// 4) String literal: not allowed in boolean context (for now)
+	//if (dynamic_cast<StringLiteral*>(expr)) {
+	//	throw std::runtime_error("Type error: string used in boolean context");
+	//}
+
+	//// 5) Anything else is invalid
+	//throw std::runtime_error("Invalid boolean expression");

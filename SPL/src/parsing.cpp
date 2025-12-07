@@ -252,6 +252,38 @@ Statement* Parser::parseStatement()
 	return new ExprStmt(e);
 
 }
+// ------------------------------------------------------------ OR AND NOT ------------------------------------------------
+Expression* Parser::parseOr()
+{
+    Expression* left = parseAnd();
+    while (peek()->TYPE == TOKEN_OR) {
+        type op = advance()->TYPE;
+        Expression* right = parseAnd();
+        left = new BinaryExpr(left, op, right);
+    }
+    return left;
+}
+
+Expression* Parser::parseAnd()
+{
+    Expression* left = parseUnary();
+    while (peek()->TYPE == TOKEN_AND) {
+        type op = advance()->TYPE;
+        Expression* right = parseUnary();
+        left = new BinaryExpr(left, op, right);
+    }
+    return left;
+}
+
+Expression* Parser::parseUnary()
+{
+    if (peek()->TYPE == TOKEN_NOT) {
+        advance();
+        Expression* e = parseUnary();
+        return new UnaryExpr(TOKEN_NOT, e);
+    }
+    return parsePrimary();
+}
 
 Expression* Parser::parseExpression()
 {
@@ -265,12 +297,14 @@ Expression* Parser::parseExpression()
 		peek()->TYPE == TOKEN_ISLESS ||
 		peek()->TYPE == TOKEN_ISMORE ||
 		peek()->TYPE == TOKEN_ISEQUAL ||
-		peek()->TYPE == TOKEN_ISNOTEQUAL)
+		peek()->TYPE == TOKEN_ISNOTEQUAL ||
+        peek()->TYPE == TOKEN_AND ||
+        peek()->TYPE == TOKEN_OR )
     {
         type op = advance()->TYPE;
         Expression* right = parsePrimary();
         left = new BinaryExpr(left, op, right);
-    }
+	} 
 
     return left;
 }
@@ -278,6 +312,11 @@ Expression* Parser::parseExpression()
 Expression* Parser::parsePrimary()
 {
     Token* t = advance();
+    // Logical NOT
+	if (t->TYPE == TOKEN_NOT) {
+		Expression* inner = parsePrimary();
+		return new UnaryExpr(TOKEN_NOT, inner);
+	}
 
     if (t->TYPE == TOKEN_INT)  return new IntLiteral(std::stoi(t->VALUE));
     

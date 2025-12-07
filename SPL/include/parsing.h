@@ -19,8 +19,13 @@ public:
     // Parse one statement
     Statement* parseStatement();
 
+	Expression* parseOr();
+	Expression* parseAnd();
+	Expression* parseUnary();
+
     // Parse expressions (supports + - * /)
     Expression* parseExpression();
+
 
     // Parse literals or identifiers 
     Expression* parsePrimary();

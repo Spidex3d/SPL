@@ -36,6 +36,15 @@ struct BinaryExpr : Expression {
         : left(l), op(o), right(r) {
     }
 };
+// TOKEN_NOT !
+struct UnaryExpr : Expression {
+	type op;          
+    Expression* expr;
+
+    UnaryExpr(type o, Expression* e)
+        : op(o), expr(e) {
+    }
+};
 
 // ----- Statements -----
 struct Statement : ASTNode {};

@@ -33,13 +33,16 @@ enum type {
 	TOKEN_WHILE,
 	TOKEN_DO,
 	TOKEN_RETURN,
-	// Operator
+	// logical operators
 	TOKEN_INCREMENT,
 	TOKEN_DECREASE,
 	TOKEN_ISLESS,
 	TOKEN_ISMORE,
 	TOKEN_ISEQUAL,
 	TOKEN_ISNOTEQUAL,
+	TOKEN_AND,	// &&
+	TOKEN_OR,	// ||
+	TOKEN_NOT,	// !
 	// boolean literals
 	TOKEN_TRUE,
 	TOKEN_FALSE,
@@ -74,6 +77,9 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"isMore",		TOKEN_ISMORE},		// more than
 	{"isEqual",		TOKEN_ISEQUAL},
 	{"isNotEqual",	TOKEN_ISNOTEQUAL},
+	{"&&",			TOKEN_AND },		// logical operators
+	{"||",			TOKEN_OR },			// logical operators
+	{"!",			TOKEN_NOT },		// logical operators
 	{"pout",		TOKEN_POUT},
 	{"dec_i",		TOKEN_DEC_I},
 	{"dec_s",		TOKEN_DEC_S},
