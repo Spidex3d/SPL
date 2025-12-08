@@ -277,46 +277,51 @@ Expression* Parser::parseAnd()
 
 Expression* Parser::parseUnary()
 {
+    // Handle logical NOT with highest precedence
     if (peek()->TYPE == TOKEN_NOT) {
-        advance();
+        advance(); // consume '!'
         Expression* e = parseUnary();
         return new UnaryExpr(TOKEN_NOT, e);
     }
-    return parsePrimary();
-}
 
-Expression* Parser::parseExpression()
-{
+    // Base: start with a primary
     Expression* left = parsePrimary();
-	// TOKEN_STAR is times, TOKEN_SLASH is divide
-	// TOKEN_LESS is isless replaces <, TOKEN_MORE is ismore replaces >
+
+    // Then handle arithmetic + comparison operators (left-assoc)
     while (peek()->TYPE == TOKEN_PLUS ||
         peek()->TYPE == TOKEN_MINUS ||
         peek()->TYPE == TOKEN_STAR ||
         peek()->TYPE == TOKEN_SLASH ||
-		peek()->TYPE == TOKEN_ISLESS ||
-		peek()->TYPE == TOKEN_ISMORE ||
-		peek()->TYPE == TOKEN_ISEQUAL ||
-		peek()->TYPE == TOKEN_ISNOTEQUAL ||
-        peek()->TYPE == TOKEN_AND ||
-        peek()->TYPE == TOKEN_OR )
+        peek()->TYPE == TOKEN_ISLESS ||
+        peek()->TYPE == TOKEN_ISMORE ||
+        peek()->TYPE == TOKEN_ISEQUAL ||
+        peek()->TYPE == TOKEN_ISNOTEQUAL)
     {
         type op = advance()->TYPE;
         Expression* right = parsePrimary();
         left = new BinaryExpr(left, op, right);
-	} 
+    }
 
     return left;
+   
+}
+
+Expression* Parser::parseExpression()
+{
+ 
+	return parseOr();
 }
 
 Expression* Parser::parsePrimary()
 {
     Token* t = advance();
-    // Logical NOT
-	if (t->TYPE == TOKEN_NOT) {
-		Expression* inner = parsePrimary();
-		return new UnaryExpr(TOKEN_NOT, inner);
-	}
+
+    // Grouping: ( expr )
+    if (t->TYPE == TOKEN_LEFT_PAREN) {
+        Expression* inner = parseExpression();
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression");
+        return inner;
+    }
 
     if (t->TYPE == TOKEN_INT)  return new IntLiteral(std::stoi(t->VALUE));
     
@@ -335,30 +340,6 @@ Expression* Parser::parsePrimary()
 
             consume(TOKEN_RIGHT_PAREN, "Expected ')'");
             return new CallExpr(t->VALUE, std::move(args));
-        }
-
-        
-
-       // return new Identifier(t->VALUE);
-        // part of ++
-        if (peek()->TYPE == TOKEN_INCREMENT) {
-            advance(); // consume ++
-            // rewrite as:  ident = ident + 1
-            return new BinaryExpr(
-                new Identifier(t->VALUE),
-                TOKEN_INCREMENT, // or just TOKEN_PLUS
-                new IntLiteral(1)
-            );
-        }
-		// part of --
-        if (peek()->TYPE == TOKEN_DECREASE) {
-            advance(); // consume --
-            // rewrite as:  ident = ident - 1
-            return new BinaryExpr(
-                new Identifier(t->VALUE),
-                TOKEN_DECREASE, // or just TOKEN_PLUS
-                new IntLiteral(1)
-            );
         }
 
         return new Identifier(t->VALUE);

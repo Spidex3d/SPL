@@ -2,15 +2,15 @@ mod main();
     dec_b a = true;
     dec_b b = false;
 
-    IfIts (!b)
+    IfIts (!a && b)
         pout "Condition a is true and b is FALSE";
     Else
         pout "Condition failed";
     EndIfIts;
 
-    // IfIts ((a && !b) || (a isEqual 1))
-    // pout "Complex condition TRUE";
-    // EndIfIts;
+     IfIts ((a && !b) || (a isEqual 1))
+     pout "Complex condition TRUE";
+     EndIfIts;
 
    dec_i x = 5;
    dec_b flag = false;
