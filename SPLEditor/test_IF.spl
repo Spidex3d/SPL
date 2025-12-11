@@ -1,3 +1,5 @@
+#import "std.splh" 
+
 mod main();
     dec_b a = true;
     dec_b b = false;
@@ -25,4 +27,8 @@ mod main();
 
     pout "Flag is " + flag;
     pout flag;
+
+    StdHello();
+    dec_s name = StdGetName();
+    pout "Name from std: " + name;
 modEnd();

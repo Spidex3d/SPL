@@ -136,7 +136,8 @@ int main() {
 
 						if (SpxGui::RunCode) {
 							//if (SPL::loadCodeFromFile("test.spl", code)) {
-							if (SPL::loadCodeFromFile(f.name, code)) {
+							//if (SPL::loadCodeFromFile(f.name, code)) {
+							if (SPL::loadCodeFromFile(f.path, code)) {
 								SPL::RunProjectCode(code);
 								GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
 

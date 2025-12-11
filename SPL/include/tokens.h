@@ -8,6 +8,8 @@ enum type {
 	TOKEN_IDENTIFIER,
 	TOKEN_INT,
 	TOKEN_STRING,
+	// defines 
+	TOKEN_IMPORT, // replace include #added
 	// Single-character tokens
 	TOKEN_EQUALS,
 	TOKEN_SEMICOLON,
@@ -42,12 +44,13 @@ enum type {
 	TOKEN_ISNOTEQUAL,
 	TOKEN_AND,	// &&
 	TOKEN_OR,	// ||
-	TOKEN_NOT,	// !
+	// unary operators
+	TOKEN_NOT,	// ! unary operator
 	// boolean literals
 	TOKEN_TRUE,
 	TOKEN_FALSE,
 	// declare dec_function token
-	// dec_int, dec_string, dec_float boolean
+	// dec_int, dec_string, dec_float dec_boolean
 	TOKEN_DEC_I, // declare integer
 	TOKEN_DEC_S,
 	TOKEN_DEC_F,
@@ -62,6 +65,7 @@ struct Token {
 };
 // Map of keywords to their token types
 static const std::unordered_map<std::string, type> KEYWORDS = {
+	{"import",		TOKEN_IMPORT},		// replace include #import
 	{"IfIts",		TOKEN_IFITS},
 	{"ElseIts",		TOKEN_ELSEITS},
 	{"Else",		TOKEN_ELSE},
@@ -79,13 +83,13 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"isNotEqual",	TOKEN_ISNOTEQUAL},
 	{"&&",			TOKEN_AND },		// logical operators
 	{"||",			TOKEN_OR },			// logical operators
-	{"!",			TOKEN_NOT },		// logical operators
+	{"!",			TOKEN_NOT },		// unary operator
 	{"pout",		TOKEN_POUT},
 	{"dec_i",		TOKEN_DEC_I},
 	{"dec_s",		TOKEN_DEC_S},
 	{"dec_f",		TOKEN_DEC_F},
-	{"true",		TOKEN_TRUE},	// boolean literals
-	{"false",		TOKEN_FALSE},	// boolean literals
-	{"dec_b",		TOKEN_DEC_B}	// declare boolean
+	{"true",		TOKEN_TRUE},		// boolean literals
+	{"false",		TOKEN_FALSE},		// boolean literals
+	{"dec_b",		TOKEN_DEC_B}		// declare boolean
 };
 

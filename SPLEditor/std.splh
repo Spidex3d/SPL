@@ -1,0 +1,9 @@
+
+
+mod StdHello();
+    pout "Hello from std library!";
+modEnd();
+
+mod StdGetName();
+    return "From StdGetName Martyn";
+modEnd();

@@ -316,7 +316,7 @@ Expression* Parser::parsePrimary()
 {
     Token* t = advance();
 
-    // Grouping: ( expr )
+    // Grouping: ( expr ) for (( )) Complex condition
     if (t->TYPE == TOKEN_LEFT_PAREN) {
         Expression* inner = parseExpression();
         consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression");

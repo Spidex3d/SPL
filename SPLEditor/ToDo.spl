@@ -9,15 +9,22 @@ Code Editor using SpxGui
 assembly -> machine code
 Code a Minimal Assembler from Scratch much like NASM but for my new language
 
-### The New spl Basic ####
+### The New spl language ####
 
 ## Syntex
 start and end syntext
 
 // This is a comment
 
-< less_than
-> more_than
+<  isLess",	
+>  isMore",	
+>= isEqual",	
+<= isNotEqual"
+
+And &&   // logical operators
+Or  ||   // logical operators
+Not !    // unary operator this can have more added to it later
+
 if (condition) { ... }  // if statment
 else { ... }            // else statment)
 
@@ -44,13 +51,23 @@ map
 templates
 
 
-includes -: to
-#adding "string.spxh"
-#adding "maths.spxh"
+#import "string.spxh"
+#import "maths.spxh"
+#import "io.spxh"
+#import "win.spxh"  The main prize move from console to windowed apps
 
-Why not use templates
-every thing is a module like functions and classes
-mod = module  
+To Do- List -
+#import -: to  Done
+Add arrays
+Add functions
+Add templates
+Add classes
+Every thing is a module like functions and classes
+mod = module  Done
+Boolean Done
+Types
+Structures struct
+Vectors 
 
 
 mod main();            // Start the main modual the entry point

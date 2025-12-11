@@ -12,12 +12,13 @@ struct Var {
 
 struct Value {
 	//enum { VVoid, VInt, VString, VBool } kind = VVoid;
-	enum { VVoid, VInt, VString, } kind = VVoid;
+	enum { VVoid, VInt, VString, VBool } kind = VVoid;
 	int i = 0;
 	std::string s;
+	bool b = false;
 	static Value Int(int v) { Value x; x.kind = VInt; x.i = v; return x; }
 	static Value Str(std::string v) { Value x; x.kind = VString; x.s = std::move(v); return x; }
-	//static Value Bool(bool v) { Value x; x.kind = VBool; x.i = v ? 1 : 0; return x; }
+	static Value Bool(bool v) { Value x; x.kind = VBool; x.i = v ? 1 : 0; return x; }
 	static Value Void() { return Value{}; }
 };
 
