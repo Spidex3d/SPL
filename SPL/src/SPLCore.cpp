@@ -1,6 +1,5 @@
 #include <fstream>
 #include <sstream>
-#include <filesystem>
 #include <unordered_set>
 #include <vector>
 #include <iostream>
@@ -11,149 +10,158 @@
 #include "../include/interpreter.h"
 #include "../include/splHelper.h"
 
-namespace SPL {
+namespace {
 
-    namespace fs = std::filesystem;
-
-    // ------------------------------------------------------------
-    // Small helpers (internal, not in the SPLCore header)
-	// Will need something like pragma once support later to avoid multiple definitions.
-    // And we will need to add a way to #import to import file to
-    // ------------------------------------------------------------
-
-    // Read a whole file into a string or throw on failure.
-    static std::string readFileToString(const std::string& path)
-    {
-        std::ifstream in(path);
-        if (!in) {
-            throw std::runtime_error("Could not open file: " + path);
-        }
-        std::stringstream buffer;
-        buffer << in.rdbuf();
-        return buffer.str();
+    // --- small path helpers (no <filesystem> needed) ---
+    static std::string dirnameOf(const std::string& path) {
+        size_t s1 = path.find_last_of("/\\");
+        if (s1 == std::string::npos) return "";
+        return path.substr(0, s1);
     }
 
-    // Recursively preprocess a source string for #import / #include.
-    // baseDir = directory relative to which imports are resolved.
-    // 'seen' tracks full paths we've already included, to avoid cycles.
-    static std::string preprocessImportSource(const std::string& source,
-        const fs::path& baseDir,
-        std::unordered_set<std::string>& seen)
+    static std::string joinPath(const std::string& a, const std::string& b) {
+        if (a.empty()) return b;
+        char last = a.back();
+        if (last == '/' || last == '\\') return a + b;
+        return a + "/" + b;
+    }
+
+    static std::string trim(const std::string& s) {
+        size_t i = 0, j = s.size();
+        while (i < j && (s[i] == ' ' || s[i] == '\t' || s[i] == '\r' || s[i] == '\n')) i++;
+        while (j > i && (s[j - 1] == ' ' || s[j - 1] == '\t' || s[j - 1] == '\r' || s[j - 1] == '\n')) j--;
+        return s.substr(i, j - i);
+    }
+
+    // Parse: #import "file.splh"
+    static bool parseImportLine(const std::string& line, std::string& outFile) {
+        std::string t = trim(line);
+        if (t.rfind("#import", 0) != 0) return false;
+
+        // find first quote
+        size_t q1 = t.find('"');
+        if (q1 == std::string::npos) return false;
+        size_t q2 = t.find('"', q1 + 1);
+        if (q2 == std::string::npos) return false;
+
+        outFile = t.substr(q1 + 1, q2 - (q1 + 1));
+        return !outFile.empty();
+    }
+
+    // Recursively expand imports.
+    // currentPath = base directory for relative imports.
+    static bool preprocessImportFile(
+        const std::string& source,
+        const std::string& currentPath,
+        std::unordered_set<std::string>& alreadyImported,
+        std::string& outExpanded)
     {
-        std::stringstream input(source);
-        std::stringstream output;
-
+        std::stringstream in(source);
         std::string line;
-        while (std::getline(input, line)) {
-            std::string trimmed = line;
+        std::ostringstream out;
 
-            // Trim leading spaces/tabs
-            auto firstNonSpace = trimmed.find_first_not_of(" \t");
-            if (firstNonSpace != std::string::npos) {
-                trimmed.erase(0, firstNonSpace);
-            }
-            else {
-                // Line is all whitespace; just pass it through
-                output << line << "\n";
-                continue;
-            }
+        while (std::getline(in, line)) {
+            std::string imp;
+            if (parseImportLine(line, imp)) {
+                std::string full = joinPath(currentPath, imp);
 
-            // Check for #import or #include at the start of the trimmed line
-            bool isImport = (trimmed.rfind("#import", 0) == 0);
-            bool isInclude = (trimmed.rfind("#include", 0) == 0);
-
-            if (isImport || isInclude) {
-                // Expect format:   #import "file.splh"  or  #include "file.splh"
-                auto firstQuote = trimmed.find('"');
-                auto lastQuote = trimmed.find('"', firstQuote + 1);
-
-                if (firstQuote == std::string::npos ||
-                    lastQuote == std::string::npos ||
-                    lastQuote <= firstQuote + 1)
-                {
-                    throw std::runtime_error("Invalid import/include directive: " + line);
-                }
-
-                std::string relPath = trimmed.substr(firstQuote + 1,
-                    lastQuote - firstQuote - 1);
-
-                fs::path fullPath = baseDir / relPath;
-                // Normalize / absolutize
-                fullPath = fs::absolute(fullPath).lexically_normal();
-                std::string fullPathStr = fullPath.string();
-
-                // Avoid re-importing the same file
-                if (seen.count(fullPathStr)) {
-                    // Already included once; skip
+                // avoid duplicate imports
+                if (alreadyImported.find(full) != alreadyImported.end()) {
                     continue;
                 }
-                seen.insert(fullPathStr);
+                alreadyImported.insert(full);
 
-                // Read imported file and preprocess its contents recursively
-                std::string importedSource = readFileToString(fullPathStr);
-                fs::path importedBaseDir = fullPath.parent_path();
+                std::string importedCode;
+                std::ifstream fs(full);
+                if (!fs) {
+                    std::cerr << "SPL error: could not open import '" << full << "'\n";
+                    return false;
+                }
+                std::stringstream buf;
+                buf << fs.rdbuf();
+                importedCode = buf.str();
 
-                std::string expanded = preprocessImportSource(importedSource,
-                    importedBaseDir,
-                    seen);
-                output << expanded << "\n";  // you can add a separator newline
+                // recurse using imported file's directory as base
+                std::string importedExpanded;
+                if (!preprocessImportFile(importedCode, dirnameOf(full), alreadyImported, importedExpanded))
+                    return false;
+
+                out << "\n// --- begin import: " << full << " ---\n";
+                out << importedExpanded;
+                out << "\n// --- end import: " << full << " ---\n\n";
             }
             else {
-                // Normal line: copy as-is
-                output << line << "\n";
+                out << line << "\n";
             }
         }
 
-        return output.str();
+        outExpanded = out.str();
+        return true;
     }
 
-    // ------------------------------------------------------------
-    // Public API
-    // ------------------------------------------------------------
+} // anonymous namespace
 
-    bool loadCodeFromFile(const std::string& filepath, std::string& outSource)
-    {
+namespace SPL {
+
+    bool loadCodeFromFile(const std::string& filepath, std::string& outSource) {
         std::ifstream sourceFileStream(filepath);
         if (!sourceFileStream) {
-            std::cerr << "Error: could not open .spl file " << filepath << std::endl;
+            std::cerr << "SPL error: could not open file '" << filepath << "'\n";
             return false;
         }
-
         std::stringstream buffer;
-        buffer << sourceFileStream.rdbuf(); // simpler way to read entire file
+        buffer << sourceFileStream.rdbuf();
         outSource = buffer.str();
         return true;
     }
 
-    // Runs SPL code from a source string in the editor.
-    // This now preprocesses #import / #include before lexing.
-    void RunProjectCode(const std::string& source)
-    {
+
+    void RunProjectCode(const std::string& source, const std::string& currentPath) {
+        // --- OPTIONAL: auto-import std.splh if you want ---
+        // If you *only* want explicit imports, delete this block.
+        std::string src = source;
+        if (src.find("#import \"std.splh\"") == std::string::npos) {
+          // prepend std import
+            src = "#import \"std.splh\"\n" + src;
+        }
+       
+        // preprocess imports
+        std::unordered_set<std::string> already;
+        std::string expanded;
+        if (!preprocessImportFile(src, currentPath, already, expanded)) {
+            return;
+        }
+
+        // tokenize / parse / run
+        Lexer lex(expanded);
+        std::vector<Token*> toks = lex.tokenize();
+
         try {
-            // Preprocess imports relative to current working directory
-            // (If you later know the real file path, you can pass its parent instead)
-            fs::path baseDir = fs::current_path();
-            std::unordered_set<std::string> seen;
-            std::string preprocessed = preprocessImportSource(source, baseDir, seen);
-
-            Lexer lex(preprocessed);
-            std::vector<Token*> tokens = lex.tokenize();
-
-            Parser parser(tokens);
+            Parser parser(toks);
             std::vector<Module*> mods = parser.parseProgram();
 
             Interpreter interp;
             interp.runProgramEntry(mods, "main");
-
-            freeTokens(tokens);
-            // If we later add destructors or cleanup for Module*, do it here.
         }
         catch (const std::exception& e) {
             std::cerr << "SPL error: " << e.what() << "\n";
         }
+
+        freeTokens(toks);
+    }
+
+    void RunFile(const std::string& filepath) {
+        std::string code;
+        if (!loadCodeFromFile(filepath, code)) return;
+
+        // base directory for relative imports
+        std::string base = dirnameOf(filepath);
+        RunProjectCode(code, base);
     }
 
 } // namespace SPL
+
+
 
 
 

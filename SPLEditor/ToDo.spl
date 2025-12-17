@@ -11,10 +11,10 @@ Code a Minimal Assembler from Scratch much like NASM but for my new language
 
 ### The New spl language ####
 
-## Syntex
+## Syntex I just love this word ##
 start and end syntext
 
-// This is a comment
+// This is a comment in spl langauge
 
 <  isLess",	
 >  isMore",	
@@ -46,7 +46,7 @@ dec_i count randomizer(1, 100) // random integer between 1 and 100
 
 
 List & arrays
-vector will be vector as i cant see an alternativee 
+vector 
 map
 templates
 
@@ -58,8 +58,9 @@ templates
 
 To Do- List -
 #import -: to  Done
-Add arrays
+Add arrays or list
 Add functions
+Add Map Unordered map or dictionary 
 Add templates
 Add classes
 Every thing is a module like functions and classes
@@ -67,7 +68,7 @@ mod = module  Done
 Boolean Done
 Types
 Structures struct
-Vectors 
+Vectors will be vector as i cant see an alternative
 
 
 mod main();            // Start the main modual the entry point

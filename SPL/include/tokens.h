@@ -9,7 +9,7 @@ enum type {
 	TOKEN_INT,
 	TOKEN_STRING,
 	// defines 
-	TOKEN_IMPORT, // replace include #added
+	TOKEN_IMPORT, // replace include #import
 	// Single-character tokens
 	TOKEN_EQUALS,
 	TOKEN_SEMICOLON,
@@ -22,7 +22,7 @@ enum type {
 	TOKEN_MINUS,
 	TOKEN_STAR,
 	TOKEN_SLASH,
-	TOKEN_COMMENT,
+	TOKEN_COMMENT, // Comment
 	// Key words
 	// TOKEN_MOD for module all code between TOKEN_MOD and TOKEN_MODEND will be treated as a module
 	TOKEN_MOD,     
@@ -36,14 +36,14 @@ enum type {
 	TOKEN_DO,
 	TOKEN_RETURN,
 	// logical operators
-	TOKEN_INCREMENT,
-	TOKEN_DECREASE,
+	TOKEN_INCREMENT, // add ++
+	TOKEN_DECREASE, // sub --
 	TOKEN_ISLESS,
 	TOKEN_ISMORE,
 	TOKEN_ISEQUAL,
 	TOKEN_ISNOTEQUAL,
-	TOKEN_AND,	// &&
-	TOKEN_OR,	// ||
+	TOKEN_AND,	// && operator
+	TOKEN_OR,	// || operator
 	// unary operators
 	TOKEN_NOT,	// ! unary operator
 	// boolean literals
@@ -85,9 +85,9 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"||",			TOKEN_OR },			// logical operators
 	{"!",			TOKEN_NOT },		// unary operator
 	{"pout",		TOKEN_POUT},
-	{"dec_i",		TOKEN_DEC_I},
-	{"dec_s",		TOKEN_DEC_S},
-	{"dec_f",		TOKEN_DEC_F},
+	{"dec_i",		TOKEN_DEC_I},		// declare integer
+	{"dec_s",		TOKEN_DEC_S},		// declare string
+	{"dec_f",		TOKEN_DEC_F},		// declare float
 	{"true",		TOKEN_TRUE},		// boolean literals
 	{"false",		TOKEN_FALSE},		// boolean literals
 	{"dec_b",		TOKEN_DEC_B}		// declare boolean

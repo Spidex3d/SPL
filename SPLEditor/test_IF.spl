@@ -4,7 +4,7 @@ mod main();
     dec_b a = true;
     dec_b b = false;
 
-    IfIts (!a && b)
+    IfIts (a && !b)
         pout "Condition a is true and b is FALSE";
     Else
         pout "Condition failed";
