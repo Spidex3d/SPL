@@ -4,10 +4,19 @@
 #include <unordered_set>
 
 namespace SPL {
+	
+	// Loads whole file to outSource (returns true on success)
 	bool loadCodeFromFile(const std::string& filepath, std::string& outSource);
-	void RunProjectCode(const std::string& source, const std::string& currentPath = "");
-	// Convenience: load + preprocess + run.
-	void RunFile(const std::string& filepath);
+
+	// Run a file by path (this is the file you want from the editor)
+	bool RunFile(const std::string& filepath);
+
+	// Run already-loaded source code with a base directory for resolving #import
+	// at the moment all files are assumed to be in the same directory
+	// This could be improved later with virtual file system support
+	bool RunSource(const std::string& source, const std::string& baseDir);
+
+
 
    
 }

@@ -1,0 +1,16 @@
+#import "std.splh"
+#import "maths.splh"
+
+mod main();
+    
+    StdHello();
+    dec_s name = StdGetName();
+    pout "Name from std: " + name;
+
+    dec_i x = Add(2, 3);
+    dec_i age = multi(2,  34);
+    dec_s name = "Martyn";
+    pout "From the maths import x = " + x;
+    pout "Age is " + age;
+    pout "Hi " + name + " Your age is: " + age;
+modEnd();

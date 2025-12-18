@@ -1,0 +1,9 @@
+
+
+mod Add(a, b);
+       return a + b;
+modEnd();
+
+mod multi(a, b);
+       return a * b;
+modEnd();

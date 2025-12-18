@@ -1,4 +1,4 @@
-#import "std.splh" 
+#import std.splh
 
 mod main();
     dec_b a = true;

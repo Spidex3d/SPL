@@ -135,10 +135,9 @@ int main() {
 						}
 
 						if (SpxGui::RunCode) {
-							//if (SPL::loadCodeFromFile("test.spl", code)) {
-							//if (SPL::loadCodeFromFile(f.name, code)) {
-							if (SPL::loadCodeFromFile(f.path, code)) {
-								SPL::RunProjectCode(code);
+							// Run this way so the Lexer can't see #import
+							if (SPL::RunFile(f.path)) {
+								
 								GLWIN_LOG_INFO("Loaded SPL code from file successfully.");
 
 							}
