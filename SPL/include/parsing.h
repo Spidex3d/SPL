@@ -31,6 +31,7 @@ public:
     Expression* parsePrimary();
 
 	IfItsStmt* parseIfIts();
+	SelectStmt* parseSelect();
 
     // Utility helpers see lexer
     Token* peek();

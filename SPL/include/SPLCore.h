@@ -12,8 +12,8 @@ namespace SPL {
 	bool RunFile(const std::string& filepath);
 
 	// Run already-loaded source code with a base directory for resolving #import
-	// at the moment all files are assumed to be in the same directory
-	// This could be improved later with virtual file system support
+	// At the moment all files are assumed to be in the same directory (baseDir)
+	// This could be improved later with virtual file system support (#import\imports\stb.splh)
 	bool RunSource(const std::string& source, const std::string& baseDir);
 
 

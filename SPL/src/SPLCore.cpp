@@ -66,11 +66,11 @@ static bool preprocessImportsRec(const std::string& source,
     while (std::getline(in, line)) {
         std::string importName;
         if (parseImportLine(line, importName)) {
-            // Only allow .splh (your current rule)
+            // Only allow .splh (the current rule)
             fs::path importPath = baseDir / importName;
 
-            // If user wrote "#import std" you could auto-append .splh;
-            // but you asked for explicit .splh. So we enforce it:
+            // Could be improved later with If user wrote "#import std" you could auto-append .splh;
+            // This is for explicit .splh. So we enforce it here:
             if (importPath.extension() != ".splh") {
                 std::cerr << "SPL error: import must end with .splh: " << importName << "\n";
                 return false;

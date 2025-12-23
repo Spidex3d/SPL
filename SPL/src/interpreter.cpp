@@ -4,6 +4,10 @@
 #include "../include/interpreter.h"
 #include <iostream>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 Interpreter::Interpreter()
 {
 
@@ -48,6 +52,8 @@ Value Interpreter::callModule(const std::string& name, const std::vector<Value>&
 		//else if (args[i].kind == Value::VBool) { v.varType = TOKEN_DEC_B; v.intValue = args[i].i ? true : false; }
 		locals[m->params[i]] = v;
 	}
+	
+
 
 	// execute body
 	returning = false;
@@ -112,6 +118,69 @@ void Interpreter::execute(Statement* stmt) {
 		else if (var->varType == TOKEN_DEC_B) var->intValue = evalBool(asn->value) ? 1 : 0; // boolean as int
 		return;
 	}
+	// -------------------------- select case statement --------------------------
+	// 
+	if (auto* sc = dynamic_cast<SelectStmt*>(stmt)) {
+
+		// String select?
+		if (isStringExpr(sc->expression)) {
+			std::string selectVal = evalString(sc->expression);
+
+			for (auto& caseBranch : sc->cases) {
+				// enforce string cases for string select
+				if (!isStringExpr(caseBranch.caseExpr)) {
+					throw std::runtime_error("Type error: string select requires string case labels");
+				}
+
+				std::string caseVal = evalString(caseBranch.caseExpr);
+				if (selectVal == caseVal) {
+					for (auto* s : caseBranch.body) {
+						if (!s) continue;
+						execute(s);
+						if (returning) return;
+					}
+					return; // stop after first match
+				}
+			}
+
+			// default
+			for (auto* s : sc->defaultBody) {
+				if (!s) continue;
+				execute(s);
+				if (returning) return;
+			}
+			return;
+		}
+
+		// Otherwise: int select (existing behavior)
+		int selectVal = evalInt(sc->expression);
+
+		for (auto& caseBranch : sc->cases) {
+			// enforce int cases for int select
+			if (isStringExpr(caseBranch.caseExpr)) {
+				throw std::runtime_error("Type error: int select cannot use string case labels");
+			}
+
+			int caseVal = evalInt(caseBranch.caseExpr);
+			if (selectVal == caseVal) {
+				for (auto* s : caseBranch.body) {
+					if (!s) continue;
+					execute(s);
+					if (returning) return;
+				}
+				return;
+			}
+		}
+
+		// default
+		for (auto* s : sc->defaultBody) {
+			if (!s) continue;
+			execute(s);
+			if (returning) return;
+		}
+		return;
+	}
+
 
 	// ----------------------------------- ifits statement -----------------------------------
 	if (auto* ifs = dynamic_cast<IfItsStmt*>(stmt)) {

@@ -119,6 +119,24 @@ struct DoStmt : Statement {
 	}
 };
 
+// ----- statements ----- select case (switch case) can be added later
+struct SelectStmt : Statement {
+	Expression* expression;
+	struct CaseBranch {
+		Expression* caseExpr;
+		std::vector<Statement*> body;
+	};
+	std::vector<CaseBranch> cases;
+	std::vector<Statement*> defaultBody;
+	SelectStmt(Expression* expr,
+		std::vector<CaseBranch> cs,
+		std::vector<Statement*> defB)
+		: expression(expr),
+		cases(std::move(cs)),
+		defaultBody(std::move(defB)) {
+	}
+};
+
 struct IfItsStmt : Statement {
     Expression* condition;
     std::vector<Statement*> thenBody;

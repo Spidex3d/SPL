@@ -147,6 +147,11 @@ std::vector<Token*> Lexer::tokenize()
 					tokens.push_back(tokenID);
 					advance();
 					break;
+				case ':':
+					tokenID = new Token{ TOKEN_COLON, ":" };
+					tokens.push_back(tokenID);
+					advance();
+					break;
 				case ',':
 					tokenID = new Token{ TOKEN_COMMA, "," };
 					tokens.push_back(tokenID);

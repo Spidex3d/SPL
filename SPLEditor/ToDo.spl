@@ -118,12 +118,20 @@ isIt 0 (!sourceFileStream)  // replacment for if statment
 
 endloopIt
 
-moveTo(index) {  //Replaces  switch case
+Are break & continue in C++
+break logical operators break statement is used to "jump out" of a switch statement.
+dec_i index = 1;
+select(index) {  //Replaces  switch case
     
-    move 0:
-    move 1:
-    move 2:
-    move 3:
+    case 0:
+    pout "You selected option 0";
+    break;
+    case 1:
+    pout "You selected option 1";
+    break;
+    defalut
+    pout "Unknown option selected";
+
     }
 
 

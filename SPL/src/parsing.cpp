@@ -73,6 +73,11 @@ Statement* Parser::parseStatement()
     if (peek()->TYPE == TOKEN_IFITS) {
         return parseIfIts();
     }
+	// ----------- Select Case -----------
+    if (peek()->TYPE == TOKEN_SELECT) {
+        return parseSelect();
+    }
+
 
     if (peek()->TYPE == TOKEN_RETURN) { advance();
 	Expression* v = parseExpression();
@@ -349,6 +354,50 @@ Expression* Parser::parsePrimary()
     throw std::runtime_error("Unexpected token in expression: '" + t->VALUE + "'");
 
 }
+
+// ------------------------------------------------------------ select case ------------------------------------------------
+SelectStmt* Parser::parseSelect()
+{
+	consume(TOKEN_SELECT, "Expected 'select'");
+	consume(TOKEN_LEFT_PAREN, "Expected '(' after select");
+	Expression* expr = parseExpression(); // select expression ie; select(x) x = index
+	consume(TOKEN_RIGHT_PAREN, "Expected ')' after select expression");
+	consume(TOKEN_LEFT_CURL_PAREN, "Expected '{' after select(...)");
+	std::vector<SelectStmt::CaseBranch> cases;
+	std::vector<Statement*> defaultBody;
+	while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN && peek()->TYPE != TOKEN_EOF) {
+		if (peek()->TYPE == TOKEN_CASE) {
+			advance(); // consume 'case'
+			Expression* caseExpr = parseExpression(); // case expression ie; case 1: 1 = index
+			consume(TOKEN_COLON, "Expected ':' after case expression");
+			std::vector<Statement*> caseBody;
+			while (peek()->TYPE != TOKEN_CASE &&
+				peek()->TYPE != TOKEN_DEFAULT &&
+				peek()->TYPE != TOKEN_RIGHT_CURL_PAREN &&
+				peek()->TYPE != TOKEN_EOF) {
+				Statement* s = parseStatement();
+				if (s) caseBody.push_back(s);
+			}
+			cases.push_back(SelectStmt::CaseBranch{ caseExpr, std::move(caseBody) });
+		}
+		else if (peek()->TYPE == TOKEN_DEFAULT) {
+			advance(); // consume 'default'
+			consume(TOKEN_COLON, "Expected ':' after default");
+			while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN && peek()->TYPE != TOKEN_EOF) {
+				Statement* s = parseStatement();
+				if (s) defaultBody.push_back(s);
+			}
+		}
+		else {
+			throw std::runtime_error("Expected 'case' or 'default' in select statement");
+		}
+	}
+	consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after select body");
+	match(TOKEN_SEMICOLON); // optional semicolon after select block
+	return new SelectStmt(expr, std::move(cases), std::move(defaultBody));
+}
+
+
 // ------------------------------------------------------------ IF ELSEIF ELSE ------------------------------------------------
 
 IfItsStmt* Parser::parseIfIts() {
@@ -439,7 +488,7 @@ Token* Parser::consume(type expected, const std::string& msg)
 	}
 	return t;
 }
-
+// lets us use match in error handling with ; or without ;
 bool Parser::match(type t)
 {
 	if (peek()->TYPE == t) {

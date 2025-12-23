@@ -12,10 +12,11 @@ enum type {
 	TOKEN_IMPORT, // replace include #import
 	// Single-character tokens
 	TOKEN_EQUALS,
-	TOKEN_SEMICOLON,
+	TOKEN_SEMICOLON,	// ;
+	TOKEN_COLON,		// :
 	TOKEN_COMMA,
-	TOKEN_LEFT_PAREN,
-	TOKEN_RIGHT_PAREN,
+	TOKEN_LEFT_PAREN,	// (
+	TOKEN_RIGHT_PAREN,	// )
 	TOKEN_LEFT_CURL_PAREN,
 	TOKEN_RIGHT_CURL_PAREN,
 	TOKEN_PLUS,
@@ -33,7 +34,12 @@ enum type {
 	TOKEN_ELSE,
 	TOKEN_ENDIFITS,
 	TOKEN_WHILE,
-	TOKEN_DO,
+	TOKEN_DO,		//  do loop
+	TOKEN_SELECT,	// switch case
+	TOKEN_CASE,		// case in switch
+	TOKEN_DEFAULT,  // default in switch
+	TOKEN_BREAK,	// break in switch, loops, IFITS
+	TOKEN_CONTINUE, // continue in loops, switch & IFITS
 	TOKEN_RETURN,
 	// logical operators
 	TOKEN_INCREMENT, // add ++
@@ -72,6 +78,11 @@ static const std::unordered_map<std::string, type> KEYWORDS = {
 	{"EndIfIts",	TOKEN_ENDIFITS},
 	{"while",		TOKEN_WHILE},		// while loop one condition
 	{"do",			TOKEN_DO},			// loop do untill with three condition
+	{"select",      TOKEN_SELECT},		// switch case
+	{"case",        TOKEN_CASE},		// case in switch
+	{"default",     TOKEN_DEFAULT},		// default in switch
+	{"break",       TOKEN_BREAK},		// break in switch, loops, IFITS
+	{"continue",    TOKEN_CONTINUE},	// continue in loops, switch & IFITS
 	{"return",		TOKEN_RETURN},
 	{"mod",			TOKEN_MOD},			// module
 	{"modEnd",		TOKEN_MODEND},		// module end
