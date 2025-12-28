@@ -12,17 +12,25 @@ Interpreter::Interpreter()
 {
 
 }
-
-Var* Interpreter::lookupVar(const std::string& name)
-{
-	for (auto it = scopes.rbegin(); it != scopes.rend(); ++it) {
-		auto f = it->find(name);
-		if (f != it->end()) return &f->second;
+Var* Interpreter::lookupVar(const std::string& name) {
+	for (int i = (int)scopes.size() - 1; i >= 0; --i) {
+		auto it = scopes[i].find(name);
+		if (it != scopes[i].end()) return &it->second;
 	}
-	auto g = variables.find(name);
-	if (g != variables.end()) return &g->second;
+	auto it = variables.find(name);
+	if (it != variables.end()) return &it->second;
 	return nullptr;
 }
+//Var* Interpreter::lookupVar(const std::string& name)
+//{
+//	for (auto it = scopes.rbegin(); it != scopes.rend(); ++it) {
+//		auto f = it->find(name);
+//		if (f != it->end()) return &f->second;
+//	}
+//	auto g = variables.find(name);
+//	if (g != variables.end()) return &g->second;
+//	return nullptr;
+//}
 
 // new
 void Interpreter::registerModules(const std::vector<Module*>& mods)
@@ -90,7 +98,7 @@ void Interpreter::runProgramEntry(std::vector<Module*>& mods, const std::string&
 	
 }
 
-
+// ------- Declaration and Assignment -------
 void Interpreter::execute(Statement* stmt) {
 	if (!stmt) return;
 
@@ -104,7 +112,8 @@ void Interpreter::execute(Statement* stmt) {
 			//else if (v.varType == TOKEN_DEC_B) v.intValue = evalInt(decl->value); // boolean as int
 			else if (v.varType == TOKEN_DEC_B) v.intValue = evalBool(decl->value) ? 1 : 0; // boolean as int
 		}
-		if (scopes.empty()) variables[decl->name] = v; else scopes.back()[decl->name] = v;
+		if (scopes.empty()) variables[decl->name] = v;
+		else scopes.back()[decl->name] = v;
 		return;
 	}
 
@@ -118,6 +127,118 @@ void Interpreter::execute(Statement* stmt) {
 		else if (var->varType == TOKEN_DEC_B) var->intValue = evalBool(asn->value) ? 1 : 0; // boolean as int
 		return;
 	}
+	// ----------------------------------- Array Assignment -----------------------------------
+	if (auto* ad = dynamic_cast<ArrayDeclaration*>(stmt)) {
+		Var v{};
+		v.varType = ad->elementType;
+		
+		v.isArray = true;
+
+		// 1) determine final size
+		int finalSize = ad->size;
+
+		// If size omitted, infer from initializer count
+		if (finalSize < 0) {
+			finalSize = (int)ad->values.size();
+		}
+
+		// 2) allocate + fill
+		if (ad->elementType == TOKEN_DEC_I || ad->elementType == TOKEN_DEC_B) {
+			v.intArray.resize(finalSize, 0);
+			for (int i = 0; i < (int)ad->values.size() && i < finalSize; i++) {
+				v.intArray[i] = evalInt(ad->values[i]);
+			}
+		}
+		else if (ad->elementType == TOKEN_DEC_S) {
+			v.stringArray.resize(finalSize, "");
+			for (int i = 0; i < (int)ad->values.size() && i < finalSize; i++) {
+				v.stringArray[i] = evalString(ad->values[i]);
+			}
+		}
+		else if (ad->elementType == TOKEN_DEC_F) {
+			v.floatArray.resize(finalSize, 0.0f);
+			for (int i = 0; i < (int)ad->values.size() && i < finalSize; i++) {
+				v.floatArray[i] = (float)evalInt(ad->values[i]); // or evalFloat if you have it
+			}
+		}
+		else {
+			throw std::runtime_error("Unsupported array type for '" + ad->name + "'");
+		}
+
+		// 3) store in current scope
+		if (scopes.empty()) {
+			variables[ad->name] = v;
+		}
+		else {
+			scopes.back()[ad->name] = v;
+		}
+		// debug output array size
+		std::cout << "[DEBUG] Stored array: " << ad->name
+			<< " size=" << finalSize << std::endl;
+
+		return;
+	}
+
+	
+	if (auto* decl = dynamic_cast<Declaration*>(stmt)) {
+		Var v{};
+		v.varType = decl->varType;
+
+		// ----------------------------------- ARRAY DECL -----------------------------------
+		if (decl->isArray) {
+			v.isArray = true;
+
+			// decide final size
+			int finalSize = decl->arraySize;
+			if (finalSize < 0) {
+				// [] with initializer -> size = initializer count
+				finalSize = (int)decl->arrayInit.size();
+			}
+
+			// allocate + fill defaults
+			if (v.varType == TOKEN_DEC_I || v.varType == TOKEN_DEC_B) {
+				v.intArray.assign(finalSize, 0);
+				for (int i = 0; i < (int)decl->arrayInit.size() && i < finalSize; ++i) {
+					v.intArray[i] = evalInt(decl->arrayInit[i]);
+					if (v.varType == TOKEN_DEC_B) v.intArray[i] = (v.intArray[i] != 0) ? 1 : 0;
+				}
+			}
+			else if (v.varType == TOKEN_DEC_F) {
+				v.floatArray.assign(finalSize, 0.0f);
+				for (int i = 0; i < (int)decl->arrayInit.size() && i < finalSize; ++i) {
+					v.floatArray[i] = (float)evalFloat(decl->arrayInit[i]);
+				}
+			}
+			else if (v.varType == TOKEN_DEC_S) {
+				v.stringArray.assign(finalSize, "");
+				for (int i = 0; i < (int)decl->arrayInit.size() && i < finalSize; ++i) {
+					v.stringArray[i] = evalString(decl->arrayInit[i]);
+				}
+			}
+			else {
+				throw std::runtime_error("Unsupported array type");
+			}
+
+			// store variable (global/local)
+			if (scopes.empty()) variables[decl->name] = v;
+			else scopes.back()[decl->name] = v;
+			return;
+		}
+
+		// -------- SCALAR DECL --------
+		if (decl->value) {
+			if (v.varType == TOKEN_DEC_I)      v.intValue = evalInt(decl->value);
+			else if (v.varType == TOKEN_DEC_B) v.intValue = evalBool(decl->value) ? 1 : 0;
+			else if (v.varType == TOKEN_DEC_F) v.floatValue = (float)evalFloat(decl->value);
+			else if (v.varType == TOKEN_DEC_S) v.stringValue = evalString(decl->value);
+		}
+
+		if (scopes.empty()) variables[decl->name] = v;
+		else scopes.back()[decl->name] = v;
+		return;
+	}
+
+
 	// -------------------------- select case statement --------------------------
 	// 
 	if (auto* sc = dynamic_cast<SelectStmt*>(stmt)) {
@@ -362,6 +483,53 @@ int Interpreter::evalInt(Expression* expr) {
 		return v.i;
 		
 	}
+	// --------------- Array access ---------------
+	if (auto* acc = dynamic_cast<ArrayAccessExpr*>(expr)) {
+		Var* v = lookupVar(acc->arrayName);
+		if (!v) {
+			std::cout << "[DEBUG] lookupVar failed for array '" << acc->arrayName << "'\n";
+			std::cout << "[DEBUG] Globals contain:\n";
+
+			for (auto& kv : variables) std::cout << "  " << kv.first << "\n";
+			throw std::runtime_error("Undefined array: " + acc->arrayName);
+		}
+
+		if (!v->isArray) {
+			throw std::runtime_error("'" + acc->arrayName + "' is not an array");
+		}
+
+		int idx = evalInt(acc->index);
+		if (idx < 0) {
+			throw std::runtime_error("Array index out of range (negative): " + std::to_string(idx));
+		}
+
+		// Choose correct backing storage based on declared type
+		if (v->varType == TOKEN_DEC_I || v->varType == TOKEN_DEC_B) {
+			if (idx >= (int)v->intArray.size()) {
+				throw std::runtime_error("Array index out of range: " + std::to_string(idx) +
+					" (size " + std::to_string((int)v->intArray.size()) + ")");
+			}
+			return v->intArray[idx];
+		}
+
+		if (v->varType == TOKEN_DEC_F) {
+			if (idx >= (int)v->floatArray.size()) {
+				throw std::runtime_error("Array index out of range: " + std::to_string(idx) +
+					" (size " + std::to_string((int)v->floatArray.size()) + ")");
+			}
+			// If your evalInt must return int, you can cast float->int here,
+			// but better is to support evalFloat for float expressions.
+			return (int)v->floatArray[idx];
+		}
+
+		if (v->varType == TOKEN_DEC_S) {
+			throw std::runtime_error("Type error: string array used in int expression: " + acc->arrayName);
+			// (Handle string arrays in evalString instead)
+		}
+
+		throw std::runtime_error("Unsupported array type for '" + acc->arrayName + "'");
+	}
+
 	 //String in an int position:
 	if (dynamic_cast<StringLiteral*>(expr)) {
 		throw std::runtime_error("Type error: string where int expected");
@@ -374,7 +542,24 @@ float Interpreter::evalFloat(Expression* expr) {
 	// For now treat ints as floats
 	if (auto* lit = dynamic_cast<IntLiteral*>(expr)) return (float)lit->value;
 	if (auto* id = dynamic_cast<Identifier*>(expr)) return variables[id->name].floatValue;
+	
+	// --------------- Array access ---------------
+	if (auto* acc = dynamic_cast<ArrayAccessExpr*>(expr)) {
+		Var* v = lookupVar(acc->arrayName);
+		if (!v || !v->isArray) throw std::runtime_error("Not an array: " + acc->arrayName);
+		int idx = evalInt(acc->index);
+		if (idx < 0 || idx >= (int)v->floatArray.size())
+			throw std::runtime_error("Array index out of bounds: " + acc->arrayName);
+		return v->floatArray[idx];
+	}
+
+
+	
+	
+	
 	throw std::runtime_error("Invalid float expression");
+
+
 }
 
 bool Interpreter::evalBool(Expression* expr)
@@ -529,7 +714,25 @@ std::string Interpreter::evalString(Expression* expr) {
 		// Other operators on strings are not supported
 		throw std::runtime_error("Type error: invalid operator on string");
 	}
+	// -------------------- Arrays ---------------------------------
+	if (auto* acc = dynamic_cast<ArrayAccessExpr*>(expr)) {
+		Var* v = lookupVar(acc->arrayName);
+		if (!v) throw std::runtime_error("Undefined array: " + acc->arrayName);
+		if (!v->isArray) throw std::runtime_error("'" + acc->arrayName + "' is not an array");
 
+		int idx = evalInt(acc->index);
+		if (idx < 0) throw std::runtime_error("Array index out of range (negative): " + std::to_string(idx));
+
+		if (v->varType != TOKEN_DEC_S) {
+			throw std::runtime_error("Type error: non-string array used as string: " + acc->arrayName);
+		}
+		if (idx >= (int)v->stringArray.size()) {
+			throw std::runtime_error("Array index out of range: " + std::to_string(idx) +
+				" (size " + std::to_string((int)v->stringArray.size()) + ")");
+		}
+		return v->stringArray[idx];
+	}
+	// -------------------- Module call -----------------------------
 	if (auto* call = dynamic_cast<CallExpr*>(expr)) {
 		std::vector<Value> args;
 		for (auto* a : call->args) {
@@ -556,6 +759,13 @@ bool Interpreter::isStringExpr(Expression* expr)
 		
 		return false;
 		
+	}
+
+	//  NEW: ---- ARRAY ---- name[index] returns string if name is a string array
+	if (auto* acc = dynamic_cast<ArrayAccessExpr*>(expr)) {
+		Var* v = lookupVar(acc->arrayName);
+		if (!v) return false;
+		return v->isArray && v->varType == TOKEN_DEC_S;
 	}
 
 	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {

@@ -12,11 +12,13 @@ enum type {
 	TOKEN_IMPORT, // replace include #import
 	// Single-character tokens
 	TOKEN_EQUALS,
-	TOKEN_SEMICOLON,	// ;
-	TOKEN_COLON,		// :
-	TOKEN_COMMA,
-	TOKEN_LEFT_PAREN,	// (
-	TOKEN_RIGHT_PAREN,	// )
+	TOKEN_SEMICOLON,		// ;
+	TOKEN_COLON,			// :
+	TOKEN_COMMA,			// ,
+	TOKEN_LEFT_BRACKET,		// [
+	TOKEN_RIGHT_BRACKET,	// ]
+	TOKEN_LEFT_PAREN,		// (
+	TOKEN_RIGHT_PAREN,		// )
 	TOKEN_LEFT_CURL_PAREN,
 	TOKEN_RIGHT_CURL_PAREN,
 	TOKEN_PLUS,
@@ -38,6 +40,7 @@ enum type {
 	TOKEN_SELECT,	// switch case
 	TOKEN_CASE,		// case in switch
 	TOKEN_DEFAULT,  // default in switch
+	
 	TOKEN_BREAK,	// break in switch, loops, IFITS
 	TOKEN_CONTINUE, // continue in loops, switch & IFITS
 	TOKEN_RETURN,

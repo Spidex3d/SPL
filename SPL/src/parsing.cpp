@@ -63,37 +63,99 @@ Module* Parser::parseModule()
 	return new Module(nameTok->VALUE, std::move(params), std::move(body));
 }
 
-
-
 Statement* Parser::parseStatement()
 {
-    // Ignore comments
+    // 0) Ignore comments
     if (peek()->TYPE == TOKEN_COMMENT) { advance(); return nullptr; }
-    // ----------- IfIts / ElseIts / Else / EndIfIts -----------
+
+    // 1) IfIts / ElseIts / Else / EndIfIts
     if (peek()->TYPE == TOKEN_IFITS) {
         return parseIfIts();
     }
-	// ----------- Select Case -----------
+
+    // 2) Select
     if (peek()->TYPE == TOKEN_SELECT) {
         return parseSelect();
     }
 
+    // 3) Return
+    if (peek()->TYPE == TOKEN_RETURN) {
+        advance(); // consume return
+        Expression* v = parseExpression();
+        consume(TOKEN_SEMICOLON, "Expected ';' after return");
+        return new ReturnStmt(v);
+    }
 
-    if (peek()->TYPE == TOKEN_RETURN) { advance();
-	Expression* v = parseExpression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after return");
-		return new ReturnStmt(v);
-	}
+    // 4) Array assignment:  names[index] = value;
+    // MUST be before normal assignment and before expression-statement fallback.
+    if (peek()->TYPE == TOKEN_IDENTIFIER &&
+        pos + 1 < tokens.size() &&
+        tokens[pos + 1]->TYPE == TOKEN_LEFT_BRACKET)
+    {
+        Token* id = advance(); // name
+        consume(TOKEN_LEFT_BRACKET, "Expected '[' after array name");
+        Expression* index = parseExpression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected ']' after array index");
+        consume(TOKEN_EQUALS, "Expected '=' after array index");
+        Expression* value = parseExpression();
+        consume(TOKEN_SEMICOLON, "Expected ';' after array assignment");
+        return new ArrayAssignStmt(id->VALUE, index, value);
+    }
 
-    // Variable declaration
+    // 5) Declarations (scalar + array)
     if (peek()->TYPE == TOKEN_DEC_I ||
         peek()->TYPE == TOKEN_DEC_S ||
         peek()->TYPE == TOKEN_DEC_F ||
-        peek()->TYPE == TOKEN_DEC_B) {
-
-        type declType = advance()->TYPE; // consume dec_i/dec_s/dec_f
+        peek()->TYPE == TOKEN_DEC_B)
+    {
+        type declType = advance()->TYPE;  // dec_i / dec_s / dec_f / dec_b
         Token* id = consume(TOKEN_IDENTIFIER, "Expected variable name");
 
+        // ---- Array declaration: dec_s names[3] { ... };
+        if (match(TOKEN_LEFT_BRACKET)) {
+            int size = -1;
+
+            // Optional explicit size: [3]
+            if (peek()->TYPE == TOKEN_INT) {
+                size = std::stoi(advance()->VALUE);
+            }
+
+            consume(TOKEN_RIGHT_BRACKET, "Expected ']' after array size");
+
+            // Allow optional '=' : arr[3] = { ... } OR arr[3] { ... }
+            match(TOKEN_EQUALS);
+
+            // Now must see '{'
+            consume(TOKEN_LEFT_CURL_PAREN, "Expected '{' for array initializer");
+
+            std::vector<Expression*> values;
+
+            // Parse: { expr (, expr)* }
+            // also allow empty: { }
+            while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN &&
+                peek()->TYPE != TOKEN_EOF)
+            {
+                values.push_back(parseExpression());
+
+                if (peek()->TYPE == TOKEN_COMMA) {
+                    advance(); // eat comma
+                    continue;
+                }
+
+                // next must be '}' otherwise syntax error
+                if (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN) {
+                    throw std::runtime_error(
+                        "Expected ',' or '}' in array initializer, got '" + peek()->VALUE + "'");
+                }
+            }
+
+            consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after array initializer");
+            consume(TOKEN_SEMICOLON, "Expected ';' after array declaration");
+
+            return new ArrayDeclaration(declType, id->VALUE, size, std::move(values));
+        }
+
+        // ---- Normal scalar declaration: dec_i x = 5;
         Expression* expr = nullptr;
         if (match(TOKEN_EQUALS)) {
             expr = parseExpression();
@@ -102,17 +164,12 @@ Statement* Parser::parseStatement()
         consume(TOKEN_SEMICOLON, "Expected ';' after declaration");
         return new Declaration(id->VALUE, declType, expr);
     }
-    
 
-    // ------------------------------------------------------ While loop ------------------------------------------------
+    // 6) While loop
     if (peek()->TYPE == TOKEN_WHILE) {
         advance(); // consume 'while'
-
         consume(TOKEN_LEFT_PAREN, "Expected '(' after while");
-
-        // condition is an expression like:  i isless 10
         Expression* cond = parseExpression();
-
         consume(TOKEN_RIGHT_PAREN, "Expected ')' after while condition");
         consume(TOKEN_LEFT_CURL_PAREN, "Expected '{' after while(...)");
 
@@ -121,122 +178,111 @@ Statement* Parser::parseStatement()
             Statement* s = parseStatement();
             if (s) body.push_back(s);
         }
-
         consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after while body");
-
-        // Optional semicolon after the block
-        match(TOKEN_SEMICOLON);
-
+        match(TOKEN_SEMICOLON); // optional
         return new WhileStmt(cond, std::move(body));
     }
 
-	// ------------------------------------------------- DO loop with three conditions ---------------------------------------
-	if (peek()->TYPE == TOKEN_DO) {
-		advance(); // consume 'do'
-		consume(TOKEN_LEFT_PAREN, "Expected '(' after do");
-        
-        Statement* init = nullptr;
-        {
-            // init can be: j; or j = 0; or dec_i j = 0;
-			init = parseStatement();
-        }
+    // 7) Do loop (your 3-part loop)
+    if (peek()->TYPE == TOKEN_DO) {
+        advance(); // consume 'do'
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after do");
 
-		Expression* cond = parseExpression();
-		consume(TOKEN_SEMICOLON, "Expected ';' in do loop after condition");
-		
-			// step can be: j++; or j = j + 1;
-		//Statement*	step = parseStatement();
-		Statement* step = nullptr;
-		//{
-			// step can be: j++; or j = j + 1;
-			//step = parseStatement();
-		//}
+        // init is a full statement that must end with ';'
+        Statement* init = parseStatement();
+
+        Expression* cond = parseExpression();
+        consume(TOKEN_SEMICOLON, "Expected ';' in do loop after condition");
+
+        // step: j++ OR j = expr   (NO trailing ';' in header)
+        Statement* step = nullptr;
+
         if (peek()->TYPE == TOKEN_IDENTIFIER &&
             pos + 1 < tokens.size() &&
             tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
         {
-            Token* idTok = advance();   // consume identifier
-            advance();                  // consume '++'
+            Token* idTok = advance();
+            advance(); // '++'
 
-            // Build: j = j + 1;
             Expression* one = new IntLiteral(1);
             Expression* leftId = new Identifier(idTok->VALUE);
             Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
-
             step = new Assignment(idTok->VALUE, plus);
         }
-        // Case 2: j = j + 1  (normal assignment step)
+        else if (peek()->TYPE == TOKEN_IDENTIFIER &&
+            pos + 1 < tokens.size() &&
+            tokens[pos + 1]->TYPE == TOKEN_DECREASE)
+        {
+            Token* idTok = advance();
+            advance(); // '--'
+
+            Expression* one = new IntLiteral(1);
+            Expression* leftId = new Identifier(idTok->VALUE);
+            Expression* minus = new BinaryExpr(leftId, TOKEN_MINUS, one);
+            step = new Assignment(idTok->VALUE, minus);
+        }
         else if (peek()->TYPE == TOKEN_IDENTIFIER &&
             pos + 1 < tokens.size() &&
             tokens[pos + 1]->TYPE == TOKEN_EQUALS)
         {
-            Token* id = advance(); // ident
+            Token* idTok = advance();
             consume(TOKEN_EQUALS, "Expected '=' in do-loop step");
-            Expression* expr = parseExpression();
-            step = new Assignment(id->VALUE, expr);
+            Expression* rhs = parseExpression();
+            step = new Assignment(idTok->VALUE, rhs);
         }
         else {
-            throw std::runtime_error("Expected step statement (e.g. j++ or j = j + 1) in do-loop");
+            throw std::runtime_error("Expected step statement (e.g. j++, j--, or j = expr) in do-loop");
         }
 
-
-		consume(TOKEN_RIGHT_PAREN, "Expected ')' after do condition");
-		
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after do condition");
         consume(TOKEN_LEFT_CURL_PAREN, "Expected '{' after do (...)");
 
-		
         std::vector<Statement*> body;
-		while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN) {
-			Statement* s = parseStatement();
-			if (s) body.push_back(s);
-		}
-		consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after do body");
-				
-        // Optional semicolon after the block
-        match(TOKEN_SEMICOLON);
+        while (peek()->TYPE != TOKEN_RIGHT_CURL_PAREN) {
+            Statement* s = parseStatement();
+            if (s) body.push_back(s);
+        }
+        consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after do body");
 
-		return new DoStmt(init, cond, step, std::move(body));
-	} 
+        match(TOKEN_SEMICOLON); // optional
+        return new DoStmt(init, cond, step, std::move(body));
+    }
 
-	
+    // 8) i++ statement
+    if (peek()->TYPE == TOKEN_IDENTIFIER &&
+        pos + 1 < tokens.size() &&
+        tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
+    {
+        Token* idTok = advance();
+        advance(); // '++'
+        consume(TOKEN_SEMICOLON, "Expected ';' after ++");
 
-	// ------------------------------------------------------------ i++  =>  i = i + 1; While loop ------------------------------------------------  
-   if (peek()->TYPE == TOKEN_IDENTIFIER &&
-       pos + 1 < tokens.size() &&
-       tokens[pos + 1]->TYPE == TOKEN_INCREMENT)
-   {
-       Token* idTok = advance();                    // consume identifier
-       advance();                                   // consume '++'
-       consume(TOKEN_SEMICOLON, "Expected ';' after ++");
+        Expression* one = new IntLiteral(1);
+        Expression* leftId = new Identifier(idTok->VALUE);
+        Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
+        return new Assignment(idTok->VALUE, plus);
+    }
 
-       // build: i = i + 1;
-       Expression* one = new IntLiteral(1);
-       Expression* leftId = new Identifier(idTok->VALUE);
-       Expression* plus = new BinaryExpr(leftId, TOKEN_PLUS, one);
-
-       return new Assignment(idTok->VALUE, plus);
-   }
-
-	// -------------------------------------------------------- i--  =>  i = i - 1; While loop ------------------------------------------------
+    // 9) i-- statement
     if (peek()->TYPE == TOKEN_IDENTIFIER &&
         pos + 1 < tokens.size() &&
         tokens[pos + 1]->TYPE == TOKEN_DECREASE)
     {
-        Token* idTok = advance();                    // consume identifier
-        advance();                                   // consume '++'
+        Token* idTok = advance();
+        advance(); // '--'
         consume(TOKEN_SEMICOLON, "Expected ';' after --");
 
-        // build: i = i - 1;
         Expression* one = new IntLiteral(1);
         Expression* leftId = new Identifier(idTok->VALUE);
         Expression* minus = new BinaryExpr(leftId, TOKEN_MINUS, one);
-
         return new Assignment(idTok->VALUE, minus);
     }
 
-    // Assignment
-    if (peek()->TYPE == TOKEN_IDENTIFIER && tokens[pos + 1]->TYPE == TOKEN_EQUALS) {
-    //if (peek()->TYPE == TOKEN_IDENTIFIER) {
+    // 10) Normal assignment: x = expr;
+    if (peek()->TYPE == TOKEN_IDENTIFIER &&
+        pos + 1 < tokens.size() &&
+        tokens[pos + 1]->TYPE == TOKEN_EQUALS)
+    {
         Token* id = advance();
         consume(TOKEN_EQUALS, "Expected '='");
         Expression* expr = parseExpression();
@@ -244,7 +290,7 @@ Statement* Parser::parseStatement()
         return new Assignment(id->VALUE, expr);
     }
 
-    // Pout (print)
+    // 11) Pout
     if (peek()->TYPE == TOKEN_POUT) {
         advance(); // consume 'pout'
         Expression* expr = parseExpression();
@@ -252,11 +298,12 @@ Statement* Parser::parseStatement()
         return new Pout(expr);
     }
 
-	Expression* e = parseExpression();
-	consume(TOKEN_SEMICOLON, "Expected ';' after expression statement");
-	return new ExprStmt(e);
-
+    // 12) Expression statement fallback (module calls etc.)
+    Expression* e = parseExpression();
+    consume(TOKEN_SEMICOLON, "Expected ';' after expression statement");
+    return new ExprStmt(e);
 }
+
 // ------------------------------------------------------------ OR AND NOT ------------------------------------------------
 Expression* Parser::parseOr()
 {
@@ -321,39 +368,86 @@ Expression* Parser::parsePrimary()
 {
     Token* t = advance();
 
-    // Grouping: ( expr ) for (( )) Complex condition
+    // Grouping: ( expr )
     if (t->TYPE == TOKEN_LEFT_PAREN) {
         Expression* inner = parseExpression();
         consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression");
         return inner;
     }
 
-    if (t->TYPE == TOKEN_INT)  return new IntLiteral(std::stoi(t->VALUE));
-    
+    // Literals
+    if (t->TYPE == TOKEN_INT)    return new IntLiteral(std::stoi(t->VALUE));
     if (t->TYPE == TOKEN_STRING) return new StringLiteral(t->VALUE);
+    if (t->TYPE == TOKEN_TRUE)   return new IntLiteral(1);
+    if (t->TYPE == TOKEN_FALSE)  return new IntLiteral(0);
 
-    if (t->TYPE == TOKEN_TRUE) return new IntLiteral(1);
-    
-    if (t->TYPE == TOKEN_FALSE) return new IntLiteral(0);
-    
-    
-    if (t->TYPE == TOKEN_IDENTIFIER) { 
+    // Array literal: { ... }
+    if (t->TYPE == TOKEN_LEFT_CURL_PAREN) {
+        // IMPORTANT: parseArrayLiteral assumes '{' is already consumed
+        return parseArrayLiteral();
+    }
+
+    // Identifier / Call / Array index
+    if (t->TYPE == TOKEN_IDENTIFIER) {
+
+        // Function / module call:  name( ... )
         if (peek()->TYPE == TOKEN_LEFT_PAREN) {
             advance(); // consume '('
-            
-			auto args = parseArgList();
 
-            consume(TOKEN_RIGHT_PAREN, "Expected ')'");
+            std::vector<Expression*> args;
+            if (peek()->TYPE != TOKEN_RIGHT_PAREN) {
+                while (true) {
+                    args.push_back(parseExpression());
+                    if (peek()->TYPE == TOKEN_COMMA) {
+                        advance(); // consume ','
+                        continue;
+                    }
+                    break;
+                }
+            }
+
+            consume(TOKEN_RIGHT_PAREN, "Expected ')' after function call");
             return new CallExpr(t->VALUE, std::move(args));
         }
 
-        return new Identifier(t->VALUE);
+        // Array indexing expression:  name[expr]
+        if (peek()->TYPE == TOKEN_LEFT_BRACKET) {
+            advance(); // consume '['
+            Expression* index = parseExpression();
+            consume(TOKEN_RIGHT_BRACKET, "Expected ']' after index");
+            return new ArrayAccessExpr(t->VALUE, index); // you should already have this in AST ArrayLiteral
+        }
 
+        // Plain variable reference
+        return new Identifier(t->VALUE);
     }
 
     throw std::runtime_error("Unexpected token in expression: '" + t->VALUE + "'");
-
 }
+
+
+
+
+ArrayLiteral* Parser::parseArrayLiteral()
+{
+    // We assume the '{' has already been consumed by parsePrimary()
+    std::vector<Expression*> elements;
+
+    // empty array: { }
+    if (peek()->TYPE == TOKEN_RIGHT_CURL_PAREN) {
+        advance(); // consume '}'
+        return new ArrayLiteral(std::move(elements));
+    }
+
+    // { expr, expr, expr }
+    do {
+        elements.push_back(parseExpression());
+    } while (match(TOKEN_COMMA));
+
+    consume(TOKEN_RIGHT_CURL_PAREN, "Expected '}' after array literal");
+    return new ArrayLiteral(std::move(elements));
+}
+	
 
 // ------------------------------------------------------------ select case ------------------------------------------------
 SelectStmt* Parser::parseSelect()
@@ -457,8 +551,6 @@ IfItsStmt* Parser::parseIfIts() {
 
         return new IfItsStmt(cond, std::move(thenBody), std::move(elseIfs), std::move(elseBody));
 }
-
-
 
 
 

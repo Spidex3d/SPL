@@ -72,6 +72,31 @@ struct IncrementExpr : Expression {
     IncrementExpr(const std::string& n) : name(n) {}
 };
 
+// ------------------ Array Access Expression: array_name[index] ------------------
+struct ArrayLiteral : Expression {
+    std::vector<Expression*> elements;
+    ArrayLiteral(std::vector<Expression*> elems)
+        : elements(std::move(elems)) {
+    }
+};
+// ----- Expressions ----- ARRAY ACCESS array_name[index]
+struct ArrayAccessExpr : Expression {
+    std::string arrayName;
+    Expression* index;
+
+    ArrayAccessExpr(const std::string& name, Expression* idx)
+        : arrayName(name), index(idx) {
+    }
+};
+
+//struct ArrayAccess : Expression {
+//    std::string name;
+//    Expression* index;
+//    ArrayAccess(const std::string& n, Expression* i)
+//        : name(n), index(i) {
+//    }
+//};
+
 struct ReturnStmt : Statement {
 	Expression* value;
 	explicit ReturnStmt(Expression* v) : value(v) {}
@@ -82,13 +107,41 @@ struct ExprStmt : Statement {
 };
 
 
-// ----- Statements ----- DECLARATION type name = value;
+// ----- Statements --- ARRAY -- DECLARATION type name = value;
+struct ArrayDeclaration : Statement {
+    type elementType;              // TOKEN_DEC_I / S / F / B
+    std::string name;
+    int size;                       // -1 = unsized
+    std::vector<Expression*> values;
+
+    ArrayDeclaration(type t,
+        const std::string& n,
+        int sz,
+        std::vector<Expression*> vals)
+        : elementType(t), name(n), size(sz), values(std::move(vals)) {
+    }
+};
+
+
 struct Declaration : Statement {
     std::string name;
-    type varType;
-    Expression* value; // optional initializer
+    type varType;                 // TOKEN_DEC_I / TOKEN_DEC_F / TOKEN_DEC_S / TOKEN_DEC_B
+    Expression* value = nullptr;  // scalar initializer (optional)
+
+    // ---- array support ----
+    bool isArray = false;
+    int arraySize = -1;                           // -1 means "unspecified"
+    std::vector<Expression*> arrayInit;           // { ... } initializers
+
+    // scalar
     Declaration(const std::string& n, type t, Expression* v = nullptr)
         : name(n), varType(t), value(v) {
+    }
+
+	// --------- array support ---------
+    Declaration(const std::string& n, type t, bool arr, int size, std::vector<Expression*> init)
+        : name(n), varType(t), value(nullptr),
+        isArray(arr), arraySize(size), arrayInit(std::move(init)) {
     }
 };
 // ----- Statements ----- ASSIGNMENT name = value;
@@ -99,6 +152,16 @@ struct Assignment : Statement {
         : name(n), value(val) {
     }
 };
+// ----- Statements ----- ARRAY ASSIGNMENT array_name[index] = value;
+struct ArrayAssignStmt : Statement {
+	std::string name;
+	Expression* index;
+	Expression* value;
+	ArrayAssignStmt(const std::string& n, Expression* i, Expression* v)
+		: name(n), index(i), value(v) {
+	}
+};
+
 // ----- Statements ----- IF condition { body } used in the while loop
 struct WhileStmt : Statement {
 	Expression* condition;

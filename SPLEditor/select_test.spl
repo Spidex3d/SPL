@@ -4,15 +4,14 @@
 mod main();
     
 dec_s name = "Derek";
-select(name) {  
+dec_i index = 5;
+select(index) {  
     
-    case "Alice":
+    case 0:
     pout "You selected option 0";
-    //break;
-    case "Martyn":
-    pout "You selected Martyn";
-   // break;
-    default:
+    case 1:
+    pout "You selected option 1";
+     default:
     pout "Unknown option selected";
 
     };

@@ -4,10 +4,15 @@
 struct Var {
 	type varType = TOKEN_DEC_I; // TOKEN_DEC_I, TOKEN_DEC_S, TOKEN_DEC_F
 	//type varType; // TOKEN_DEC_I, TOKEN_DEC_S, TOKEN_DEC_F
-	std::string stringValue; // for string variables
 	int intValue = 0;	   // for int variables
 	float floatValue = 0.0f;	 // for float variables
-	//bool boolValue = false;   // for boolean variables
+	std::string stringValue; // for string variables
+	// arrays
+	bool isArray = false; // flag to indicate if this Var is an array
+	std::vector<int> intArray;
+	std::vector<float> floatArray;
+	std::vector<std::string> stringArray;
+
 };
 
 struct Value {

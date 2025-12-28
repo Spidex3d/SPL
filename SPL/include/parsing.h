@@ -29,9 +29,10 @@ public:
 
     // Parse literals or identifiers 
     Expression* parsePrimary();
+    ArrayLiteral* parseArrayLiteral();
 
 	IfItsStmt* parseIfIts();
-	SelectStmt* parseSelect();
+	SelectStmt* parseSelect(); // switch case
 
     // Utility helpers see lexer
     Token* peek();

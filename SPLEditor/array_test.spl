@@ -1,0 +1,12 @@
+
+mod main();
+//dec_s name;
+dec_s name[4] = { "Martyn", "Alice", "Leah", "Derek" };
+pout name[2];   // Alice
+
+ //dec_i numbers;
+ dec_i  numbers[ ] = { 12, 22, 31, 14, 43 };
+ pout numbers[1]; // 22
+
+
+modEnd();
