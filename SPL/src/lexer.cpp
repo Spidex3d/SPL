@@ -82,13 +82,29 @@ std::vector<Token*> Lexer::tokenize()
 			// Handle integer literals Numbers
 			else if (isdigit(current)) {
 				std::string number;
+				bool hasDot = false;
+
+				while (isdigit(current) || (!hasDot && current == '.')) {
+					if (current == '.') hasDot = true;
+					number += current;
+					advance();
+				}
+
+				if (hasDot) tokenID = new Token{ TOKEN_FLOAT, number };
+				else        tokenID = new Token{ TOKEN_INT, number };
+
+				tokens.push_back(tokenID);
+			}
+
+			/*else if (isdigit(current)) {
+				std::string number;
 				while (isdigit(current)) {
 					number += current;
 					advance();
 				}
 				tokenID = new Token{ TOKEN_INT, number };
 				tokens.push_back(tokenID);
-			}
+			}*/
 			// Handle comments
 			else if (current == '/' && peek(1) == '/') {
 				std::string comment;

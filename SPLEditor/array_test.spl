@@ -8,5 +8,7 @@ pout name[2];   // Alice
  dec_i  numbers[ ] = { 12, 22, 31, 14, 43 };
  pout numbers[1]; // 22
 
+ dec_f vector[3] = { -1.1, 2.2, 3.3 };
+ pout vector[0];
 
 modEnd();

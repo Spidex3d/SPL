@@ -8,6 +8,7 @@ enum type {
 	TOKEN_IDENTIFIER,
 	TOKEN_INT,
 	TOKEN_STRING,
+	TOKEN_FLOAT,
 	// defines 
 	TOKEN_IMPORT, // replace include #import
 	// Single-character tokens

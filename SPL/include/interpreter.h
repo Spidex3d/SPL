@@ -66,6 +66,7 @@ private:
 	std::string evalString(Expression* expr);
 	// evaluate a Float expression from the AST
 	float evalFloat(Expression* expr);
+	bool isFloatExpr(Expression* expr);
 	// evaluate a boolean expression from the AST
 	bool evalBool(Expression* expr);
 	bool isBoolExpr(Expression* expr);

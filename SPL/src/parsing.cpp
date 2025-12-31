@@ -112,7 +112,7 @@ Statement* Parser::parseStatement()
         Token* id = consume(TOKEN_IDENTIFIER, "Expected variable name");
 
         // ---- Array declaration: dec_s names[3] { ... };
-        if (match(TOKEN_LEFT_BRACKET)) {
+		if (match(TOKEN_LEFT_BRACKET)) {   // '['
             int size = -1;
 
             // Optional explicit size: [3]
@@ -138,7 +138,7 @@ Statement* Parser::parseStatement()
                 values.push_back(parseExpression());
 
                 if (peek()->TYPE == TOKEN_COMMA) {
-                    advance(); // eat comma
+                    advance(); // eat the comma
                     continue;
                 }
 
@@ -377,6 +377,7 @@ Expression* Parser::parsePrimary()
 
     // Literals
     if (t->TYPE == TOKEN_INT)    return new IntLiteral(std::stoi(t->VALUE));
+    if (t->TYPE == TOKEN_FLOAT)  return new FloatLiteral(std::stof(t->VALUE));
     if (t->TYPE == TOKEN_STRING) return new StringLiteral(t->VALUE);
     if (t->TYPE == TOKEN_TRUE)   return new IntLiteral(1);
     if (t->TYPE == TOKEN_FALSE)  return new IntLiteral(0);
@@ -399,7 +400,7 @@ Expression* Parser::parsePrimary()
                 while (true) {
                     args.push_back(parseExpression());
                     if (peek()->TYPE == TOKEN_COMMA) {
-                        advance(); // consume ','
+                        advance(); // eat the comma ','
                         continue;
                     }
                     break;
@@ -412,7 +413,7 @@ Expression* Parser::parsePrimary()
 
         // Array indexing expression:  name[expr]
         if (peek()->TYPE == TOKEN_LEFT_BRACKET) {
-            advance(); // consume '['
+            advance(); // eat the L Bracket '['
             Expression* index = parseExpression();
             consume(TOKEN_RIGHT_BRACKET, "Expected ']' after index");
             return new ArrayAccessExpr(t->VALUE, index); // you should already have this in AST ArrayLiteral

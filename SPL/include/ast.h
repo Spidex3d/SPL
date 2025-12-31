@@ -17,6 +17,11 @@ struct IntLiteral : Expression {
     int value;
     explicit IntLiteral(int val) : value(val) {}
 };
+// ----- Expressions ----- FLOAT
+struct FloatLiteral : Expression {
+	float value;
+	explicit FloatLiteral(float val) : value(val) {}
+};
 // ----- Expressions ----- STRING
 struct StringLiteral : Expression {
     std::string value;
@@ -88,14 +93,7 @@ struct ArrayAccessExpr : Expression {
         : arrayName(name), index(idx) {
     }
 };
-
-//struct ArrayAccess : Expression {
-//    std::string name;
-//    Expression* index;
-//    ArrayAccess(const std::string& n, Expression* i)
-//        : name(n), index(i) {
-//    }
-//};
+// ----- Statements ----- RETURN value;
 
 struct ReturnStmt : Statement {
 	Expression* value;
@@ -124,9 +122,9 @@ struct ArrayDeclaration : Statement {
 
 
 struct Declaration : Statement {
-    std::string name;
-    type varType;                 // TOKEN_DEC_I / TOKEN_DEC_F / TOKEN_DEC_S / TOKEN_DEC_B
-    Expression* value = nullptr;  // scalar initializer (optional)
+	std::string name;               // variable name
+    type varType;                   // TOKEN_DEC_I / TOKEN_DEC_F / TOKEN_DEC_S / TOKEN_DEC_B
+    Expression* value = nullptr;    // scalar initializer (optional)
 
     // ---- array support ----
     bool isArray = false;
@@ -154,9 +152,9 @@ struct Assignment : Statement {
 };
 // ----- Statements ----- ARRAY ASSIGNMENT array_name[index] = value;
 struct ArrayAssignStmt : Statement {
-	std::string name;
-	Expression* index;
-	Expression* value;
+	std::string name;       // array name
+	Expression* index;      // index expression
+	Expression* value;	  // value expression
 	ArrayAssignStmt(const std::string& n, Expression* i, Expression* v)
 		: name(n), index(i), value(v) {
 	}

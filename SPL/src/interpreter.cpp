@@ -158,7 +158,8 @@ void Interpreter::execute(Statement* stmt) {
 		else if (ad->elementType == TOKEN_DEC_F) {
 			v.floatArray.resize(finalSize, 0.0f);
 			for (int i = 0; i < (int)ad->values.size() && i < finalSize; i++) {
-				v.floatArray[i] = (float)evalInt(ad->values[i]); // or evalFloat if you have it
+				//v.floatArray[i] = (float)evalInt(ad->values[i]); // or evalFloat if you have it
+				v.floatArray[i] = (float)evalFloat(ad->values[i]); // update to evalFloat 
 			}
 		}
 		else {
@@ -390,6 +391,7 @@ void Interpreter::execute(Statement* stmt) {
 		else if (isBoolExpr(e)) {
 			std::cout << (evalBool(e) ? "true" : "false") << std::endl;
 		}
+		else if (isFloatExpr(e)) std::cout << evalFloat(e) << "\n";
 		else {
 			std::cout << evalInt(e) << std::endl;
 		}
@@ -538,28 +540,70 @@ int Interpreter::evalInt(Expression* expr) {
 }
 
 // Evaluate expressions floats
+
 float Interpreter::evalFloat(Expression* expr) {
-	// For now treat ints as floats
-	if (auto* lit = dynamic_cast<IntLiteral*>(expr)) return (float)lit->value;
-	if (auto* id = dynamic_cast<Identifier*>(expr)) return variables[id->name].floatValue;
-	
-	// --------------- Array access ---------------
+	if (auto* f = dynamic_cast<FloatLiteral*>(expr)) {
+		return f->value;
+	}
+	if (auto* i = dynamic_cast<IntLiteral*>(expr)) {
+		return (float)i->value;
+	}
+	if (auto* id = dynamic_cast<Identifier*>(expr)) {
+		Var* v = lookupVar(id->name);
+		if (!v) throw std::runtime_error("Undefined variable: " + id->name);
+		if (v->varType != TOKEN_DEC_F)
+			throw std::runtime_error("Type error: expected float variable: " + id->name);
+		return v->floatValue;
+	}
+
+	// Array access: vector[2]
 	if (auto* acc = dynamic_cast<ArrayAccessExpr*>(expr)) {
 		Var* v = lookupVar(acc->arrayName);
 		if (!v || !v->isArray) throw std::runtime_error("Not an array: " + acc->arrayName);
-		int idx = evalInt(acc->index);
+
+		int idx = evalInt(acc->index); // index must be int
 		if (idx < 0 || idx >= (int)v->floatArray.size())
 			throw std::runtime_error("Array index out of bounds: " + acc->arrayName);
+
 		return v->floatArray[idx];
 	}
 
+	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
+		float L = evalFloat(bin->left);
+		float R = evalFloat(bin->right);
+		switch (bin->op) {
+		case TOKEN_PLUS:  return L + R;
+		case TOKEN_MINUS: return L - R;
+		case TOKEN_STAR:  return L * R;
+		case TOKEN_SLASH: return L / R;
+		default: break;
+		}
+	}
 
-	
-	
-	
 	throw std::runtime_error("Invalid float expression");
+}
 
 
+bool Interpreter::isFloatExpr(Expression* expr)
+{
+	if (dynamic_cast<FloatLiteral*>(expr)) return true;
+
+	if (auto* id = dynamic_cast<Identifier*>(expr)) {
+		Var* v = lookupVar(id->name);
+		return v && v->varType == TOKEN_DEC_F;
+	}
+
+	if (auto* acc = dynamic_cast<ArrayAccessExpr*>(expr)) {
+		Var* v = lookupVar(acc->arrayName);
+		return v && v->isArray && v->varType == TOKEN_DEC_F;
+	}
+
+	if (auto* bin = dynamic_cast<BinaryExpr*>(expr)) {
+		// if either side is float -> float math
+		return isFloatExpr(bin->left) || isFloatExpr(bin->right);
+	}
+
+	return false;
 }
 
 bool Interpreter::evalBool(Expression* expr)
