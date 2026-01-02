@@ -41,7 +41,7 @@ struct BinaryExpr : Expression {
         : left(l), op(o), right(r) {
     }
 };
-// TOKEN_NOT !
+// TOKEN_NOT ! and TOKEN_MINUS - unary expressions
 struct UnaryExpr : Expression {
 	type op;          
     Expression* expr;

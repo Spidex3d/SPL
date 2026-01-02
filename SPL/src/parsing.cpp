@@ -329,6 +329,13 @@ Expression* Parser::parseAnd()
 
 Expression* Parser::parseUnary()
 {
+    // unary minus: -expr
+    if (peek()->TYPE == TOKEN_MINUS) {
+        type op = advance()->TYPE; // consume '-'
+        Expression* rhs = parseUnary(); // allow --1 etc.
+        return new UnaryExpr(op, rhs);
+    }
+
     // Handle logical NOT with highest precedence
     if (peek()->TYPE == TOKEN_NOT) {
         advance(); // consume '!'
@@ -337,10 +344,12 @@ Expression* Parser::parseUnary()
     }
 
     // Base: start with a primary
-    Expression* left = parsePrimary();
+     //Expression* left = parsePrimary();
+     return parsePrimary();
+    
 
     // Then handle arithmetic + comparison operators (left-assoc)
-    while (peek()->TYPE == TOKEN_PLUS ||
+    /*while (peek()->TYPE == TOKEN_PLUS ||
         peek()->TYPE == TOKEN_MINUS ||
         peek()->TYPE == TOKEN_STAR ||
         peek()->TYPE == TOKEN_SLASH ||
@@ -354,7 +363,7 @@ Expression* Parser::parseUnary()
         left = new BinaryExpr(left, op, right);
     }
 
-    return left;
+    return left;*/
    
 }
 

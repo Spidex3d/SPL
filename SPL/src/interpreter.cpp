@@ -542,6 +542,11 @@ int Interpreter::evalInt(Expression* expr) {
 // Evaluate expressions floats
 
 float Interpreter::evalFloat(Expression* expr) {
+	if (auto* u = dynamic_cast<UnaryExpr*>(expr)) {
+		if (u->op == TOKEN_MINUS) return -evalFloat(u->expr);
+		if (u->op == TOKEN_NOT)   return evalBool(u->expr) ? 0.0f : 1.0f; // optional
+	}
+
 	if (auto* f = dynamic_cast<FloatLiteral*>(expr)) {
 		return f->value;
 	}
